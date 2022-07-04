@@ -11,9 +11,11 @@
 /** The maximal digital value */
 #define MAX_DIGITAL     (4095UL)
 
-#define my_channel AFEC_CHANNEL_5
+#define channel_1 AFEC_CHANNEL_5
+#define channel_2 AFEC_CHANNEL_3
 
-volatile uint16_t data;
+volatile uint16_t data_1;
+volatile uint16_t data_2;
 
 static void configure_console(void)
 {
@@ -51,12 +53,14 @@ int main(void)
 
 	afec_init(AFEC0, &afec_cfg);
 	
-	afec_channel_enable(AFEC0, my_channel);
+	afec_channel_enable(AFEC0, channel_1);
+	afec_channel_enable(AFEC0, channel_2);
 	struct afec_ch_config afec_ch_cfg;
 	afec_ch_get_config_defaults(&afec_ch_cfg);
-	afec_ch_set_config(AFEC0, my_channel, &afec_ch_cfg);
-	afec_channel_set_analog_offset(AFEC0, my_channel, 0x800);
-	
+	afec_ch_set_config(AFEC0, channel_1, &afec_ch_cfg);
+	afec_ch_set_config(AFEC0, channel_2, &afec_ch_cfg);
+	afec_channel_set_analog_offset(AFEC0, channel_1, 0x800);
+	afec_channel_set_analog_offset(AFEC0, channel_2, 0x800);
 	
 	/*ioport_set_pin_dir(PIO_PD17, IOPORT_DIR_OUTPUT);
 	ioport_set_pin_level(PIO_PD17, IOPORT_PIN_LEVEL_HIGH); */
@@ -73,11 +77,15 @@ int main(void)
 	
 /*	AFE0_AD0 - PA17
 	AFE0_AD1 - PA18
+	AFE0_AD2 - PA19
+	AFE0_AD3 - PA20
+	AFE0_AD4 - PB0
 	AFE0_AD5 - PB1  */
 
 	while (1) {
 			afec_start_software_conversion(AFEC0);
-			data = afec_channel_get_value(AFEC0, my_channel);
+			data_1 = afec_channel_get_value(AFEC0, channel_1);
+			data_2 = afec_channel_get_value(AFEC0, channel_2);
 			delay_ms(500);
 			
 	}
