@@ -11,6 +11,8 @@
 /** The maximal digital value */
 #define MAX_DIGITAL     (4095UL)
 
+#define my_channel AFEC_CHANNEL_5
+
 volatile uint16_t data;
 
 static void configure_console(void)
@@ -48,17 +50,35 @@ int main(void)
 	afec_get_config_defaults(&afec_cfg);
 
 	afec_init(AFEC0, &afec_cfg);
-
-	struct afec_temp_sensor_config afec_temp_sensor_cfg;
-
-	afec_temp_sensor_get_config_defaults(&afec_temp_sensor_cfg);
-	afec_temp_sensor_cfg.rctc = true;
-	afec_temp_sensor_set_config(AFEC0, &afec_temp_sensor_cfg);
+	
+	afec_channel_enable(AFEC0, my_channel);
+	struct afec_ch_config afec_ch_cfg;
+	afec_ch_get_config_defaults(&afec_ch_cfg);
+	afec_ch_set_config(AFEC0, my_channel, &afec_ch_cfg);
+	afec_channel_set_analog_offset(AFEC0, my_channel, 0x800);
 	
 	
+	/*ioport_set_pin_dir(PIO_PD17, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_level(PIO_PD17, IOPORT_PIN_LEVEL_HIGH); */
+	
+	REG_PIOD_PER |= PIO_PER_P17;
+	REG_PIOD_OER |= PIO_PER_P17;
+	REG_PIOD_SODR |= PIO_PER_P17;
+	
+//	REG_PIOB_PER |= PIO_PER_P1;
+//	REG_PIOB_ODR |= PIO_PER_P1;
+	
+	
+//	ioport_set_pin_dir(PIO_PB1, IOPORT_DIR_INPUT);
+	
+/*	AFE0_AD0 - PA17
+	AFE0_AD1 - PA18
+	AFE0_AD5 - PB1  */
+
 	while (1) {
-			data = afec_channel_get_value(AFEC0, AFEC_TEMPERATURE_SENSOR);
-			delay_ms(1000);
+			afec_start_software_conversion(AFEC0);
+			data = afec_channel_get_value(AFEC0, my_channel);
+			delay_ms(500);
 			
 	}
 }
