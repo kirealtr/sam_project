@@ -22,6 +22,10 @@ src\ASF\sam\boards\sam4e_ek\init.c
 
 src\ASF\sam\drivers\afec\afec.c
 
+src\ASF\sam\drivers\pio\pio.c
+
+src\ASF\sam\drivers\pio\pio_handler.c
+
 src\ASF\sam\drivers\pmc\pmc.c
 
 src\ASF\sam\drivers\pmc\sleep.c

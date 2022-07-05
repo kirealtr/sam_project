@@ -17,9 +17,13 @@
 #define period 10
 #define freq 100
 
+/*
 volatile uint16_t data_1;
-volatile uint16_t data_2;
+volatile uint16_t data_2; */
 
+#define data_size 1024
+uint16_t data[2][data_size];
+volatile uint32_t i = 0;
 
 static void configure_console(void)
 {
@@ -39,11 +43,17 @@ static void configure_console(void)
 	stdio_serial_init(CONF_UART, &uart_serial_options);
 }
 
-void get_data(void)
+
+static void get_data(void)
 {	
 	afec_start_software_conversion(AFEC0);
-	data_1 = afec_channel_get_value(AFEC0, channel_1);
-	data_2 = afec_channel_get_value(AFEC0, channel_2);
+	data[0][i] = afec_channel_get_value(AFEC0, channel_1);
+	data[1][i] = afec_channel_get_value(AFEC0, channel_2);
+	i++;
+	if (i > 1023) {
+//		data[0][0] = 0;
+		i = 0;
+	}
 }
 
 void TC0_Handler(void)
@@ -121,6 +131,8 @@ int main(void)
 	AFE0_AD3 - PA20
 	AFE0_AD4 - PB0
 	AFE0_AD5 - PB1  */
+
+
 
 	while (1);
 }
