@@ -14,16 +14,38 @@
 #define channel_1 AFEC_CHANNEL_5
 #define channel_2 AFEC_CHANNEL_3
 
-#define period 10
-#define freq 100
+#define period 0.01
+#define freq 100000
 
-/*
-volatile uint16_t data_1;
-volatile uint16_t data_2; */
+/* Creating PIO pins */
+#define V_pin IOPORT_CREATE_PIN(PIOD, 17)
+#define sound_pin IOPORT_CREATE_PIN(PIOD, 28)
 
-#define data_size 1024
+/* Pins to communicate with RPi, black wire connects GND */
+#define GO_pin IOPORT_CREATE_PIN(PIOC, 31) // red wire
+#define resp_pin IOPORT_CREATE_PIN(PIOC, 30) // yellow wire
+
+/*	AFE0_AD0 - PA17
+	AFE0_AD1 - PA18
+	AFE0_AD2 - PA19
+	AFE0_AD3 - PA20
+	AFE0_AD4 - PB0
+	AFE0_AD5 - PB1  */
+
+#define data_size 25000
 uint16_t data[2][data_size];
 volatile uint32_t i = 0;
+
+volatile bool buffer_full = false;
+volatile bool GO_status = false;
+
+typedef enum{
+	SL_READY = 0,
+	SL_SAMPLING,
+	SL_WRITING,
+	} sl_state_t;
+	
+static sl_state_t state;
 
 static void configure_console(void)
 {
@@ -43,16 +65,16 @@ static void configure_console(void)
 	stdio_serial_init(CONF_UART, &uart_serial_options);
 }
 
-
 static void get_data(void)
 {	
-	afec_start_software_conversion(AFEC0);
-	data[0][i] = afec_channel_get_value(AFEC0, channel_1);
-	data[1][i] = afec_channel_get_value(AFEC0, channel_2);
-	i++;
-	if (i > 1023) {
-//		data[0][0] = 0;
-		i = 0;
+	if (i < data_size) {
+		afec_start_software_conversion(AFEC0);
+		data[0][i] = afec_channel_get_value(AFEC0, channel_1);
+		data[1][i] = afec_channel_get_value(AFEC0, channel_2);
+		i++;
+	}
+	else {
+		buffer_full = true;
 	}
 }
 
@@ -65,7 +87,7 @@ void TC0_Handler(void)
 
 	/* Avoid compiler warning */
 	UNUSED(ul_dummy);
-
+	
 	/** Measure voltage. */
 	get_data();
 }
@@ -88,17 +110,33 @@ static void configure_tc(void)
 	/* Configure and enable interrupt on RC compare */
 	NVIC_EnableIRQ((IRQn_Type) ID_TC0);
 	tc_enable_interrupt(TC0, 0, TC_IER_CPCS);
-	
-	tc_start(TC0, 0);
 }
 
+static void configure_channel(int chan)
+{
+	afec_channel_enable(AFEC0, chan);
+	struct afec_ch_config afec_ch_cfg;
+	afec_ch_get_config_defaults(&afec_ch_cfg);
+	afec_ch_set_config(AFEC0, chan, &afec_ch_cfg);
+	afec_channel_set_analog_offset(AFEC0, chan, 0x800);
+}
+
+static void mk_sound(void)
+{	
+	/* Dynamic is connected to PC17 pin */
+	REG_PIOC_PER |= PIO_PER_P17;
+	REG_PIOC_OER |= PIO_PER_P17;
+	REG_PIOC_SODR |= PIO_PER_P17;
+	delay_us(20);
+	REG_PIOC_CODR |= PIO_PER_P17;
+}
 
 int main(void)
 {
-	
 	/* Initialize the SAM system. */
 	sysclk_init();
 	board_init();
+	ioport_init();
 
 	configure_console();
 
@@ -112,27 +150,42 @@ int main(void)
 	
 	configure_tc();
 	
-	afec_channel_enable(AFEC0, channel_1);
-	afec_channel_enable(AFEC0, channel_2);
-	struct afec_ch_config afec_ch_cfg;
-	afec_ch_get_config_defaults(&afec_ch_cfg);
-	afec_ch_set_config(AFEC0, channel_1, &afec_ch_cfg);
-	afec_ch_set_config(AFEC0, channel_2, &afec_ch_cfg);
-	afec_channel_set_analog_offset(AFEC0, channel_1, 0x800);
-	afec_channel_set_analog_offset(AFEC0, channel_2, 0x800);
+	configure_channel(channel_1);
+	configure_channel(channel_2);
 	
-	REG_PIOD_PER |= PIO_PER_P17;
-	REG_PIOD_OER |= PIO_PER_P17;
-	REG_PIOD_SODR |= PIO_PER_P17;
+	/* Applying voltage from PD17 pin to V contact of potentiometer */
+	ioport_set_pin_dir(V_pin, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_level(V_pin, true);
 	
-/*	AFE0_AD0 - PA17
-	AFE0_AD1 - PA18
-	AFE0_AD2 - PA19
-	AFE0_AD3 - PA20
-	AFE0_AD4 - PB0
-	AFE0_AD5 - PB1  */
+	/* Configuring PIO */
+	ioport_set_pin_dir(GO_pin, IOPORT_DIR_INPUT);
+	ioport_set_pin_dir(sound_pin, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(resp_pin, IOPORT_DIR_OUTPUT);
+	
+	/* Response pin will be on high level when sampling is done */
+	ioport_set_pin_level(resp_pin, false);
 
+	state = SL_READY;
 
-
-	while (1);
+	while (1) {
+		switch (state){
+			case SL_READY:
+				GO_status = ioport_get_pin_level(GO_pin);
+				if (GO_status)
+					state = SL_SAMPLING;
+				break;
+			case SL_SAMPLING:
+				tc_start(TC0, 0);
+				mk_sound();
+				if (buffer_full) {
+					ioport_set_pin_level(resp_pin, true);
+					state = SL_WRITING;
+//					data[0][0] = 0;
+				}
+				break;
+			case SL_WRITING:
+				
+				break;
+		}
+	}
 }
