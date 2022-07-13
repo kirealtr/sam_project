@@ -90,6 +90,9 @@
 // From module: SAM4E startup code
 #include <exceptions.h>
 
+// From module: SPI - Serial Peripheral Interface
+#include <spi.h>
+
 // From module: Sleep manager - SAM implementation
 #include <sam/sleepmgr.h>
 #include <sleepmgr.h>

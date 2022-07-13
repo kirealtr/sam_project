@@ -54,77 +54,22 @@
 /* Clock phase. */
 #define SPI_CLK_PHASE 0
 
-/* Delay before SPCK. */
-#define SPI_DLYBS 0x40
-
-/* Delay between consecutive transfers. */
-#define SPI_DLYBCT 0x10
-
-/* Slave data mask. */
-#define CMD_DATA_MSK 0xFFFF0000
-
-/* Slave data block mask. */
-#define DATA_BLOCK_MSK 0x0000FFFF
-
 /* Number of commands logged in status. */
 #define NB_STATUS_CMD   20
-
-/* Number of SPI clock configurations. */
-#define NUM_SPCK_CONFIGURATIONS 4
-
-/* SPI Communicate buffer size. */
-#define COMM_BUFFER_SIZE   64
 
 /* UART baudrate. */
 #define UART_BAUDRATE      115200
 
-/* Data block number. */
-#define MAX_DATA_BLOCK_NUMBER  4
-
-/* Max retry times. */
-#define MAX_RETRY    4
+#define bits_per_transfer SPI_CSR_BITS_16_BIT
 
 volatile uint32_t i = 0;
-static uint8_t buffer[10];
-//volatile bool shift_status = true;
+static uint16_t buffer[256];
 volatile uint8_t counter = 0;
-
-
-static void spi_slave_transfer(void)
-{	
-/*	if(shift_status)
-	{
-		shift_status = false;
-		
-	}*/ 
-//	delay_us(1);
-	/*
-	if(i < 10) {
-		spi_write(SPI_SLAVE_BASE, buffer[i], 0, 0);
-		i++; 
-//		counter++;
-	}
-	else {
-		i = 0;
-	} */
-	uint8_t byte = 0x81;
-	spi_write(SPI_SLAVE_BASE, byte, 0, 0);
-	
-}
-
-
-/**
- * \brief Interrupt handler for the SPI slave.
- */
-void SPI_Handler(void)
-{	
-	spi_slave_transfer();
-}
 
 /**
  * \brief Initialize SPI as slave.
  */
-static void spi_slave_initialize(uint32_t bits_per_transfer)
+static void spi_slave_initialize(void)
 {
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
@@ -137,8 +82,30 @@ static void spi_slave_initialize(uint32_t bits_per_transfer)
 	spi_set_clock_polarity(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_POLARITY);
 	spi_set_clock_phase(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_PHASE);
 	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, bits_per_transfer);
-	//spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_TDRE);
+	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_TDRE);
 	spi_enable(SPI_SLAVE_BASE);
+	
+}
+
+
+static void spi_slave_transfer(void)
+{
+	if(i <= 4) {
+		spi_write(SPI_SLAVE_BASE, buffer[i], 0, 0);
+		i++; 
+	}
+	else {
+		i = 0;
+	}
+}
+
+
+/**
+ * \brief Interrupt handler for the SPI slave.
+ */
+void SPI_Handler(void)
+{	
+	spi_slave_transfer();
 }
 
 
@@ -173,15 +140,14 @@ int main(void)
 	NVIC_ClearPendingIRQ(SPI_IRQn);
 	NVIC_SetPriority(SPI_IRQn, 0);
 	NVIC_EnableIRQ(SPI_IRQn);
-	/*
-	for(int j = 0; j < 10; j++)
+	
+	for(int j = 0; j <= 4; j++)
 	{
-		buffer[j] = j%3;
-	} */
+		buffer[j] = j * 1000;
+	}
 	
-	spi_slave_initialize(SPI_CSR_BITS_8_BIT);
+	spi_slave_initialize();
 	
-	spi_slave_transfer();
 
 	while (1) ;
 	

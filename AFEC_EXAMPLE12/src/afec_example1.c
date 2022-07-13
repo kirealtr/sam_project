@@ -4,6 +4,10 @@
 #include <assert.h>
 #include <delay.h>
 #include "asf.h"
+#include "stdio_serial.h"
+#include "conf_board.h"
+#include "conf_clock.h"
+#include "spi.h"
 
 /** Reference voltage for AFEC,in mv. */
 #define VOLT_REF        (3300)
@@ -12,7 +16,7 @@
 #define MAX_DIGITAL     (4095UL)
 
 #define channel_1 AFEC_CHANNEL_5
-#define channel_2 AFEC_CHANNEL_3
+#define channel_2 AFEC_CHANNEL_4
 
 #define period 0.01
 #define freq 100000
@@ -32,6 +36,26 @@
 	AFE0_AD4 - PB0
 	AFE0_AD5 - PB1  */
 
+/* Chip select. */
+#define SPI_CHIP_SEL 0
+#define SPI_CHIP_PCS spi_get_pcs(SPI_CHIP_SEL)
+
+/* Clock polarity. */
+#define SPI_CLK_POLARITY 0
+
+/* Clock phase. */
+#define SPI_CLK_PHASE 0
+
+/* Number of commands logged in status. */
+#define NB_STATUS_CMD   20
+
+/* UART baudrate. */
+#define UART_BAUDRATE      115200
+
+#define bits_per_transfer SPI_CSR_BITS_16_BIT
+
+#define SPI_SLAVE_BASE SPI
+
 #define data_size 25000
 uint16_t data[2][data_size];
 volatile uint32_t i = 0;
@@ -47,17 +71,45 @@ typedef enum{
 	
 static sl_state_t state;
 
+static void spi_slave_initialize(void)
+{
+	/* Configure an SPI peripheral. */
+	spi_enable_clock(SPI_SLAVE_BASE);
+
+	spi_disable(SPI_SLAVE_BASE);
+	spi_reset(SPI_SLAVE_BASE);
+	spi_set_slave_mode(SPI_SLAVE_BASE);
+	spi_disable_mode_fault_detect(SPI_SLAVE_BASE);
+	spi_set_peripheral_chip_select_value(SPI_SLAVE_BASE, SPI_CHIP_PCS);
+	spi_set_clock_polarity(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_POLARITY);
+	spi_set_clock_phase(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_PHASE);
+	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, bits_per_transfer);
+	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_TDRE);
+	spi_enable(SPI_SLAVE_BASE);
+}
+
+static void spi_slave_transfer(void)
+{
+	if(i <= 4) {
+		spi_write(SPI_SLAVE_BASE, buffer[i], 0, 0);
+		i++; 
+	}
+	else {
+		i = 0;
+	}
+}
+
+void SPI_Handler(void)
+{	
+	spi_slave_transfer();
+}
+
+
 static void configure_console(void)
 {
 	const usart_serial_options_t uart_serial_options = {
 		.baudrate = CONF_UART_BAUDRATE,
-#ifdef CONF_UART_CHAR_LENGTH
-		.charlength = CONF_UART_CHAR_LENGTH,
-#endif
 		.paritytype = CONF_UART_PARITY,
-#ifdef CONF_UART_STOP_BITS
-		.stopbits = CONF_UART_STOP_BITS,
-#endif
 	};
 
 	/* Configure console UART. */
@@ -120,16 +172,16 @@ static void configure_channel(int chan)
 	afec_ch_set_config(AFEC0, chan, &afec_ch_cfg);
 	afec_channel_set_analog_offset(AFEC0, chan, 0x800);
 }
-
+/*
 static void mk_sound(void)
 {	
-	/* Dynamic is connected to PC17 pin */
+	// Dynamic is connected to PC17 pin
 	REG_PIOC_PER |= PIO_PER_P17;
 	REG_PIOC_OER |= PIO_PER_P17;
 	REG_PIOC_SODR |= PIO_PER_P17;
 	delay_us(20);
 	REG_PIOC_CODR |= PIO_PER_P17;
-}
+} */
 
 int main(void)
 {
@@ -176,14 +228,14 @@ int main(void)
 				break;
 			case SL_SAMPLING:
 				tc_start(TC0, 0);
-				mk_sound();
+				//mk_sound();
 				if (buffer_full) {
-					ioport_set_pin_level(resp_pin, true);
+					ioport_set_pin_level(resp_pin, 1);
 					state = SL_WRITING;
-//					data[0][0] = 0;
 				}
 				break;
 			case SL_WRITING:
+				
 				
 				break;
 		}
