@@ -5,9 +5,9 @@ spi.open(0, 0)
 spi.mode = 0b01
 spi.max_speed_hz = 1000000
 
-def getAdc():
-    adcResponse = spi.xfer2([0])
-    return adcResponse[0]
+def spi_read():
+    resp = spi.xfer2([0, 0])
+    return resp[0] << 8 | resp[1]
 
 try:
     samples = []
