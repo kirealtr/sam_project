@@ -13,7 +13,7 @@ try:
     samples = []
 
     for i in range(13):
-        print(getAdc())
+        print(spi_read())
         
 finally:
     spi.close()
