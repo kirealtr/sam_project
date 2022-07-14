@@ -70,7 +70,9 @@ volatile uint8_t counter = 0;
  * \brief Initialize SPI as slave.
  */
 static void spi_slave_initialize(void)
-{
+{	
+	/* Configure SPI interrupts for slave only. */
+	NVIC_EnableIRQ(SPI_IRQn);
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
 
@@ -135,11 +137,6 @@ int main(void)
 	/* Initialize the console UART. */
 	configure_console();
 
-	/* Configure SPI interrupts for slave only. */
-	NVIC_DisableIRQ(SPI_IRQn);
-	NVIC_ClearPendingIRQ(SPI_IRQn);
-	NVIC_SetPriority(SPI_IRQn, 0);
-	NVIC_EnableIRQ(SPI_IRQn);
 	
 	for(int j = 0; j <= 4; j++)
 	{

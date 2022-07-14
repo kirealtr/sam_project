@@ -22,12 +22,13 @@
 #define freq 100000
 
 /* Creating PIO pins */
-#define V_pin IOPORT_CREATE_PIN(PIOD, 17)
-#define sound_pin IOPORT_CREATE_PIN(PIOD, 28)
+// #define sound_pin IOPORT_CREATE_PIN(PIOD, 28)
 
 /* Pins to communicate with RPi, black wire connects GND */
-#define GO_pin IOPORT_CREATE_PIN(PIOC, 31) // red wire
-#define resp_pin IOPORT_CREATE_PIN(PIOC, 30) // yellow wire
+#define GO_pin IOPORT_CREATE_PIN(PIOC, 31) // red wire, GPIO17
+#define is_sampled_pin IOPORT_CREATE_PIN(PIOC, 30) // yellow wire, GPIO27
+#define ch_select_pin IOPORT_CREATE_PIN(PIOC, 29) // blue wire, GPIO22
+#define is_written_pin IOPORT_CREATE_PIN(PIOC, 28) // green  wire, GPIO23
 
 /*	AFE0_AD0 - PA17
 	AFE0_AD1 - PA18
@@ -56,12 +57,15 @@
 
 #define SPI_SLAVE_BASE SPI
 
-#define data_size 25000
+#define data_size 10
+
 uint16_t data[2][data_size];
 volatile uint32_t i = 0;
 
 volatile bool buffer_full = false;
 volatile bool GO_status = false;
+volatile uint32_t channel_to_write = 2; // by default channel_to_write doesn't spot on any channel
+volatile bool ch_written = false;
 
 typedef enum{
 	SL_READY = 0,
@@ -73,6 +77,10 @@ static sl_state_t state;
 
 static void spi_slave_initialize(void)
 {
+	/* Configure SPI interrupts for slave only. */
+	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
+	NVIC_EnableIRQ(SPI_IRQn);
+	
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
 
@@ -90,12 +98,19 @@ static void spi_slave_initialize(void)
 
 static void spi_slave_transfer(void)
 {
-	if(i <= 4) {
-		spi_write(SPI_SLAVE_BASE, buffer[i], 0, 0);
+	if(channel_to_write > 1)
+	{
+		return;
+	}
+	
+	if(i < data_size)
+	{
+		spi_write(SPI_SLAVE_BASE, data[channel_to_write][i], 0, 0);
 		i++; 
 	}
-	else {
-		i = 0;
+	else 
+	{
+		ch_written = true;
 	}
 }
 
@@ -140,7 +155,7 @@ void TC0_Handler(void)
 	/* Avoid compiler warning */
 	UNUSED(ul_dummy);
 	
-	/** Measure voltage. */
+	/* Measure voltage. */
 	get_data();
 }
 
@@ -160,8 +175,11 @@ static void configure_tc(void)
 	tc_write_rc(TC0, 0, (ul_sysclk / ul_div) / freq);
 
 	/* Configure and enable interrupt on RC compare */
+	NVIC_DisableIRQ(SPI_IRQn);
 	NVIC_EnableIRQ((IRQn_Type) ID_TC0);
 	tc_enable_interrupt(TC0, 0, TC_IER_CPCS);
+	
+	tc_start(TC0, 0);
 }
 
 static void configure_channel(int chan)
@@ -183,6 +201,35 @@ static void mk_sound(void)
 	REG_PIOC_CODR |= PIO_PER_P17;
 } */
 
+static void set_default_pin_levels(void)
+{
+	/* Response pin will be on high level when sampling is done */
+	ioport_set_pin_level(is_sampled_pin, 0);
+	ioport_set_pin_level(is_written_pin, 0);
+	ioport_set_pin_level(LED0_GPIO, 1);
+	ioport_set_pin_level(LED1_GPIO, 1);
+}
+
+static void configure_pio(void)
+{
+		ioport_set_pin_dir(GO_pin, IOPORT_DIR_INPUT);
+		//	ioport_set_pin_dir(sound_pin, IOPORT_DIR_OUTPUT);
+		ioport_set_pin_dir(is_sampled_pin, IOPORT_DIR_OUTPUT);
+		ioport_set_pin_dir(ch_select_pin, IOPORT_DIR_INPUT);
+		ioport_set_pin_dir(is_written_pin, IOPORT_DIR_OUTPUT);
+}
+
+static void restart(void)
+{
+	GO_status = ioport_get_pin_level(GO_pin);
+	if (!GO_status)
+	{
+		state = SL_READY;
+		set_default_pin_levels();
+		i = 0;
+	}
+}
+
 int main(void)
 {
 	/* Initialize the SAM system. */
@@ -200,43 +247,57 @@ int main(void)
 
 	afec_init(AFEC0, &afec_cfg);
 	
-	configure_tc();
-	
 	configure_channel(channel_1);
 	configure_channel(channel_2);
 	
-	/* Applying voltage from PD17 pin to V contact of potentiometer */
-	ioport_set_pin_dir(V_pin, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(V_pin, true);
-	
 	/* Configuring PIO */
-	ioport_set_pin_dir(GO_pin, IOPORT_DIR_INPUT);
-	ioport_set_pin_dir(sound_pin, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(resp_pin, IOPORT_DIR_OUTPUT);
+	configure_pio();
+	set_default_pin_levels();
 	
-	/* Response pin will be on high level when sampling is done */
-	ioport_set_pin_level(resp_pin, false);
 
 	state = SL_READY;
+
 
 	while (1) {
 		switch (state){
 			case SL_READY:
 				GO_status = ioport_get_pin_level(GO_pin);
 				if (GO_status)
+				{
 					state = SL_SAMPLING;
-				break;
-			case SL_SAMPLING:
-				tc_start(TC0, 0);
-				//mk_sound();
-				if (buffer_full) {
-					ioport_set_pin_level(resp_pin, 1);
-					state = SL_WRITING;
+					configure_tc();
+					
+					ioport_set_pin_level(LED0_GPIO, 0);
 				}
 				break;
+			case SL_SAMPLING:
+				//mk_sound();
+				if (buffer_full) 
+				{	
+					ioport_set_pin_level(LED0_GPIO, 1);
+					ioport_set_pin_level(LED1_GPIO, 0);
+					ioport_set_pin_level(is_sampled_pin, 1);
+					tc_stop(TC0, 0);
+					state = SL_WRITING;
+					
+					spi_slave_initialize();
+				}
+				restart();
+				break;
 			case SL_WRITING:
+				if(channel_to_write != ioport_get_pin_level(ch_select_pin))
+				{
+					i = 0;
+					ioport_set_pin_level(is_written_pin, 0);
+					channel_to_write = ioport_get_pin_level(ch_select_pin);
+				}
 				
+				if(ch_written)
+				{
+					ioport_set_pin_level(is_written_pin, 1);
+				}
 				
+				restart();
 				break;
 		}
 	}
