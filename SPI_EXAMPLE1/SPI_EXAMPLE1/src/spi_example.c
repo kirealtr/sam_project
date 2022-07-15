@@ -72,6 +72,7 @@ volatile uint8_t counter = 0;
 static void spi_slave_initialize(void)
 {	
 	/* Configure SPI interrupts for slave only. */
+	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
 	NVIC_EnableIRQ(SPI_IRQn);
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
@@ -122,6 +123,27 @@ static void configure_console(void)
 	stdio_serial_init(CONF_UART, &uart_serial_options);
 }
 
+static void configure_tc(void)
+{
+	uint32_t ul_div;
+	uint32_t ul_tcclks;
+	uint32_t ul_sysclk = sysclk_get_cpu_hz();
+
+	/* Configure PMC */
+	pmc_enable_periph_clk(ID_TC0);
+
+	/** Configure TC for a (freq) Hz frequency and trigger on RC compare. */
+	tc_find_mck_divisor(1000, ul_sysclk, &ul_div, &ul_tcclks, ul_sysclk);
+	tc_init(TC0, 0, ul_tcclks | TC_CMR_CPCTRG);
+	tc_write_rc(TC0, 0, (ul_sysclk / ul_div) / 1000);
+
+	/* Configure and enable interrupt on RC compare */
+	NVIC_DisableIRQ(SPI_IRQn);
+	NVIC_EnableIRQ((IRQn_Type) ID_TC0);
+	tc_enable_interrupt(TC0, 0, TC_IER_CPCS);
+	
+	tc_start(TC0, 0);
+}
 
 /**
  * \brief Application entry point for SPI example.
@@ -136,7 +158,8 @@ int main(void)
 
 	/* Initialize the console UART. */
 	configure_console();
-
+	
+	configure_tc();
 	
 	for(int j = 0; j <= 4; j++)
 	{

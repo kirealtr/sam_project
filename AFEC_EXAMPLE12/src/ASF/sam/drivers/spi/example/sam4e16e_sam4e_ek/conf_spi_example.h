@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief Board configuration.
+ * \brief SPI example configuration.
  *
  * Copyright (c) 2014-2018 Microchip Technology Inc. and its subsidiaries.
  *
@@ -30,31 +30,41 @@
  * \asf_license_stop
  *
  */
+
+/**
+ * \defgroup spi_example_pin_defs
+ *  - <b> SAM4E-EK  --  SAM4E-EK </b>
+ *  - VCC -- VCC
+ *  - NPCS0(PA11) -- NPCS0(PA11)
+ *  - MISO(PA12)  -- MISO(PA12)
+ *  - MOSI(PA13)  -- MOSI(PA13)
+ *  - SPCK(PA14)  -- SPCK(PA14)
+ *  - GND -- GND
+ */
 /*
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 
-#ifndef CONF_BOARD_H_INCLUDED
-#define CONF_BOARD_H_INCLUDED
+#ifndef CONF_SPI_EXAMPLE_H_INCLUDED
+#define CONF_SPI_EXAMPLE_H_INCLUDED
 
-/** Enable Com Port. */
-#define CONF_BOARD_UART_CONSOLE
+/// @cond 0
+/**INDENT-OFF**/
+#ifdef __cplusplus
+extern "C" {
+#endif
+/**INDENT-ON**/
+/// @endcond
 
-/** Usart Hw ID used by the console (UART0). */
-#define CONSOLE_UART_ID          ID_UART0
+#define SPI_Handler     SPI_Handler
+#define SPI_IRQn        SPI_IRQn
 
-/** SPI MACRO definition */
-#define CONF_BOARD_SPI
+/// @cond 0
+/**INDENT-OFF**/
+#ifdef __cplusplus
+}
+#endif
+/**INDENT-ON**/
+/// @endcond
 
-/** SPI slave select MACRO definition */
-#define CONF_BOARD_SPI_NPCS0
-
-/** Spi Hw ID . */
-#define SPI_ID          ID_SPI
-
-/** SPI base address for SPI master mode*/
-#define SPI_MASTER_BASE      SPI
-/** SPI base address for SPI slave mode, (on different board) */
-#define SPI_SLAVE_BASE       SPI
-
-#endif /* CONF_BOARD_H_INCLUDED */
+#endif /* CONF_SPI_EXAMPLE_H_INCLUDED */

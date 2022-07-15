@@ -7,7 +7,7 @@
 #include "stdio_serial.h"
 #include "conf_board.h"
 #include "conf_clock.h"
-#include "spi.h"
+#include "conf_spi_example.h"
 
 /** Reference voltage for AFEC,in mv. */
 #define VOLT_REF        (3300)
@@ -55,17 +55,18 @@
 
 #define bits_per_transfer SPI_CSR_BITS_16_BIT
 
-#define SPI_SLAVE_BASE SPI
-
 #define data_size 10
 
-uint16_t data[2][data_size];
+#define breaking_sig 0xFFFF
+
+static uint16_t data[2][data_size + 1];
 volatile uint32_t i = 0;
 
 volatile bool buffer_full = false;
-volatile bool GO_status = false;
-volatile uint32_t channel_to_write = 2; // by default channel_to_write doesn't spot on any channel
+volatile uint8_t channel_to_write = 2; // by default channel_to_write doesn't spot on any channel
 volatile bool ch_written = false;
+volatile uint8_t ch_select = 2;
+volatile bool GO_status = false;
 
 typedef enum{
 	SL_READY = 0,
@@ -110,6 +111,7 @@ static void spi_slave_transfer(void)
 	}
 	else 
 	{
+		spi_write(SPI_SLAVE_BASE, breaking_sig, 0, 0);
 		ch_written = true;
 	}
 }
@@ -205,7 +207,7 @@ static void set_default_pin_levels(void)
 {
 	/* Response pin will be on high level when sampling is done */
 	ioport_set_pin_level(is_sampled_pin, 0);
-	ioport_set_pin_level(is_written_pin, 0);
+	ioport_set_pin_level(is_written_pin, 1);
 	ioport_set_pin_level(LED0_GPIO, 1);
 	ioport_set_pin_level(LED1_GPIO, 1);
 }
@@ -224,9 +226,9 @@ static void restart(void)
 	GO_status = ioport_get_pin_level(GO_pin);
 	if (!GO_status)
 	{
-		state = SL_READY;
 		set_default_pin_levels();
 		i = 0;
+		state = SL_READY;
 	}
 }
 
@@ -240,11 +242,8 @@ int main(void)
 	configure_console();
 
 	afec_enable(AFEC0);
-
 	struct afec_config afec_cfg;
-
 	afec_get_config_defaults(&afec_cfg);
-
 	afec_init(AFEC0, &afec_cfg);
 	
 	configure_channel(channel_1);
@@ -254,9 +253,7 @@ int main(void)
 	configure_pio();
 	set_default_pin_levels();
 	
-
 	state = SL_READY;
-
 
 	while (1) {
 		switch (state){
@@ -264,10 +261,9 @@ int main(void)
 				GO_status = ioport_get_pin_level(GO_pin);
 				if (GO_status)
 				{
-					state = SL_SAMPLING;
-					configure_tc();
-					
+					configure_tc();	
 					ioport_set_pin_level(LED0_GPIO, 0);
+					state = SL_SAMPLING;
 				}
 				break;
 			case SL_SAMPLING:
@@ -278,18 +274,23 @@ int main(void)
 					ioport_set_pin_level(LED1_GPIO, 0);
 					ioport_set_pin_level(is_sampled_pin, 1);
 					tc_stop(TC0, 0);
+					spi_slave_initialize();
+					
 					state = SL_WRITING;
 					
-					spi_slave_initialize();
 				}
 				restart();
+				
 				break;
 			case SL_WRITING:
-				if(channel_to_write != ioport_get_pin_level(ch_select_pin))
+				ioport_set_pin_level(LED2_GPIO, 0);
+				ch_select = ioport_get_pin_level(ch_select_pin);
+				if(channel_to_write != ch_select)
 				{
+					channel_to_write = ch_select;
 					i = 0;
+					ch_written = false;
 					ioport_set_pin_level(is_written_pin, 0);
-					channel_to_write = ioport_get_pin_level(ch_select_pin);
 				}
 				
 				if(ch_written)
