@@ -13,7 +13,8 @@ try:
     samples = []
 
     for i in range(13):
-        print(spi_read())
+        samples.append(spi_read())
         
+    print(samples)
 finally:
     spi.close()
