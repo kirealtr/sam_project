@@ -54,8 +54,10 @@ try:
     plt.plot(data[1])
     
     plt.show()
+
     
 finally:
+    GPIO.output(GO_pin, 0)
     GPIO.cleanup()
     spi.close()
     
