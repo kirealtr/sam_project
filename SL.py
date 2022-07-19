@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 spi = spidev.SpiDev()
 spi.open(0, 0)
 spi.mode = 0b01
-spi.max_speed_hz = 10000
+spi.max_speed_hz = 10000000
 
 GO_pin = 17
 is_sampled_pin = 27
@@ -40,14 +40,10 @@ try:
         
         while GPIO.input(is_written_pin):
             continue
-        #print(ch)
         while not GPIO.input(is_written_pin):
             sample = spi_read()
-            if sample < 0xFFFF:
-                data[ch].append(sample)
-            else:
-                break
-            print(sample)
+            data[ch].append(sample)
+
         print(ch)
     
     GPIO.output(GO_pin, 0)
