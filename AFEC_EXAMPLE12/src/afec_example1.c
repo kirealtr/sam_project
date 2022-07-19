@@ -57,9 +57,7 @@
 
 #define data_size 10000
 
-//#define breaking_sig 0xFFFF
-
-static uint16_t data[2][data_size + 1];
+static uint16_t data[2][data_size];
 volatile uint32_t i = 0;
 
 volatile bool buffer_full = false;
@@ -78,6 +76,10 @@ volatile sl_state_t state;
 
 static void spi_slave_initialize(void)
 {
+	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
+	NVIC_DisableIRQ(SPI_IRQn);
+	NVIC_ClearPendingIRQ(SPI_IRQn);
+	NVIC_SetPriority(SPI_IRQn, 0);
 	
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
@@ -94,18 +96,6 @@ static void spi_slave_initialize(void)
 	spi_enable(SPI_SLAVE_BASE);
 }
 
-static void enable_spi_slave_interrupt(void)
-{
-	NVIC_SetPriority(SPI_IRQn, 0);
-	NVIC_EnableIRQ(SPI_IRQn);
-}
-
-static void disable_interrupts(void)
-{
-	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
-	NVIC_DisableIRQ(SPI_IRQn);
-	NVIC_ClearPendingIRQ(SPI_IRQn);
-}
 
 static void spi_slave_transfer(void)
 {
@@ -119,11 +109,7 @@ static void spi_slave_transfer(void)
 		spi_write(SPI_SLAVE_BASE, data[channel_to_write][i], 0, 0);
 		i++; 
 	}
-	else 
-	{
-//		spi_write(SPI_SLAVE_BASE, breaking_sig, 0, 0);
-		ch_written = true;
-	}
+	else ch_written = true;
 }
 
 void SPI_Handler(void)
@@ -240,6 +226,7 @@ static void restart(void)
 		set_default_pin_levels();
 		i = 0;
 		state = SL_READY;
+		buffer_full = false;
 	}
 }
 
@@ -287,29 +274,27 @@ int main(void)
 					tc_stop(TC0, 0);
 					state = SL_WRITING;
 					spi_slave_initialize();
-					disable_interrupts();
 				}
-				else
-				{
-					restart();
-					break;
-				}
-				
+
+				restart();
+				break;
+
 			case SL_WRITING:
 				ch_select = ioport_get_pin_level(ch_select_pin);
 				if(channel_to_write != ch_select)
 				{
+					restart();
 					channel_to_write = ch_select;
 					i = 0;
 					ch_written = false;
-					enable_spi_slave_interrupt();
+					NVIC_EnableIRQ(SPI_IRQn);
 					ioport_set_pin_level(is_written_pin, 0);
 				}
 				
 				if(ch_written)
 				{
 					ioport_set_pin_level(is_written_pin, 1);
-					disable_interrupts();
+					NVIC_DisableIRQ(SPI_IRQn);
 				}
 				
 				restart();
