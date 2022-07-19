@@ -15,8 +15,8 @@
 /** The maximal digital value */
 #define MAX_DIGITAL     (4095UL)
 
-#define channel_1 AFEC_CHANNEL_5
-#define channel_2 AFEC_CHANNEL_4
+#define channel_0 AFEC_CHANNEL_4 // PB0
+#define channel_1 AFEC_CHANNEL_5 // PB1
 
 #define period 0.01
 #define freq 100000
@@ -53,11 +53,15 @@
 /* UART baudrate. */
 #define UART_BAUDRATE      115200
 
-#define bits_per_transfer SPI_CSR_BITS_16_BIT
+#define BITS_PER_TRANSFER SPI_CSR_BITS_16_BIT
 
-#define data_size 10000
+#define DATA_SIZE 10000
 
-static uint16_t data[2][data_size];
+#define PRE_TRIGGER_SAMPLES DATA_SIZE/10
+#define TRIGGER_LEVEL 2048
+#define TRIGGER_CHANNEL 1
+
+static uint16_t data[2][DATA_SIZE];
 volatile uint32_t i = 0;
 
 volatile bool buffer_full = false;
@@ -65,6 +69,8 @@ volatile uint8_t channel_to_write = 2; // by default channel_to_write doesn't sp
 volatile bool ch_written = false;
 volatile uint8_t ch_select = 2;
 volatile bool GO_status = false;
+
+volatile bool trigger_hit = false;
 
 typedef enum{
 	SL_READY = 0,
@@ -91,7 +97,7 @@ static void spi_slave_initialize(void)
 	spi_set_peripheral_chip_select_value(SPI_SLAVE_BASE, SPI_CHIP_PCS);
 	spi_set_clock_polarity(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_POLARITY);
 	spi_set_clock_phase(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_PHASE);
-	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, bits_per_transfer);
+	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, BITS_PER_TRANSFER);
 	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_NSSR);
 	spi_enable(SPI_SLAVE_BASE);
 }
@@ -104,7 +110,7 @@ static void spi_slave_transfer(void)
 		return;
 	}
 	
-	if(i < data_size)
+	if(i < DATA_SIZE)
 	{
 		spi_write(SPI_SLAVE_BASE, data[channel_to_write][i], 0, 0);
 		i++; 
@@ -132,15 +138,19 @@ static void configure_console(void)
 
 static void get_data(void)
 {	
-	if (i < data_size) {
+	if (i < DATA_SIZE)
+	{
 		afec_start_software_conversion(AFEC0);
-		data[0][i] = afec_channel_get_value(AFEC0, channel_1);
-		data[1][i] = afec_channel_get_value(AFEC0, channel_2);
-		i++;
+		
+		data[0][i] = afec_channel_get_value(AFEC0, channel_0);
+		data[1][i] = afec_channel_get_value(AFEC0, channel_1);
+		
+		if (data[TRIGGER_CHANNEL][i] >= TRIGGER_LEVEL && i > 4) trigger_hit = true;
+		
+		if (i >= PRE_TRIGGER_SAMPLES && !trigger_hit) i = 0;
+		else i++;
 	}
-	else {
-		buffer_full = true;
-	}
+	else buffer_full = true;
 }
 
 void TC0_Handler(void)
@@ -226,7 +236,9 @@ static void restart(void)
 		set_default_pin_levels();
 		i = 0;
 		state = SL_READY;
+		
 		buffer_full = false;
+		trigger_hit = false;
 	}
 }
 
@@ -244,8 +256,8 @@ int main(void)
 	afec_get_config_defaults(&afec_cfg);
 	afec_init(AFEC0, &afec_cfg);
 	
+	configure_channel(channel_0);
 	configure_channel(channel_1);
-	configure_channel(channel_2);
 	
 	/* Configuring PIO */
 	configure_pio();
