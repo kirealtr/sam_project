@@ -55,9 +55,9 @@
 
 #define bits_per_transfer SPI_CSR_BITS_16_BIT
 
-#define data_size 10
+#define data_size 10000
 
-#define breaking_sig 0xFFFF
+//#define breaking_sig 0xFFFF
 
 static uint16_t data[2][data_size + 1];
 volatile uint32_t i = 0;
@@ -74,13 +74,10 @@ typedef enum{
 	SL_WRITING,
 	} sl_state_t;
 	
-static sl_state_t state;
+volatile sl_state_t state;
 
 static void spi_slave_initialize(void)
 {
-	/* Configure SPI interrupts for slave only. */
-	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
-	NVIC_EnableIRQ(SPI_IRQn);
 	
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
@@ -93,8 +90,21 @@ static void spi_slave_initialize(void)
 	spi_set_clock_polarity(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_POLARITY);
 	spi_set_clock_phase(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_PHASE);
 	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, bits_per_transfer);
-	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_TDRE);
+	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_NSSR);
 	spi_enable(SPI_SLAVE_BASE);
+}
+
+static void enable_spi_slave_interrupt(void)
+{
+	NVIC_SetPriority(SPI_IRQn, 0);
+	NVIC_EnableIRQ(SPI_IRQn);
+}
+
+static void disable_interrupts(void)
+{
+	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
+	NVIC_DisableIRQ(SPI_IRQn);
+	NVIC_ClearPendingIRQ(SPI_IRQn);
 }
 
 static void spi_slave_transfer(void)
@@ -111,7 +121,7 @@ static void spi_slave_transfer(void)
 	}
 	else 
 	{
-		spi_write(SPI_SLAVE_BASE, breaking_sig, 0, 0);
+//		spi_write(SPI_SLAVE_BASE, breaking_sig, 0, 0);
 		ch_written = true;
 	}
 }
@@ -210,6 +220,7 @@ static void set_default_pin_levels(void)
 	ioport_set_pin_level(is_written_pin, 1);
 	ioport_set_pin_level(LED0_GPIO, 1);
 	ioport_set_pin_level(LED1_GPIO, 1);
+	ioport_set_pin_level(LED2_GPIO, 1);
 }
 
 static void configure_pio(void)
@@ -274,28 +285,31 @@ int main(void)
 					ioport_set_pin_level(LED1_GPIO, 0);
 					ioport_set_pin_level(is_sampled_pin, 1);
 					tc_stop(TC0, 0);
-					spi_slave_initialize();
-					
 					state = SL_WRITING;
-					
+					spi_slave_initialize();
+					disable_interrupts();
 				}
-				restart();
+				else
+				{
+					restart();
+					break;
+				}
 				
-				break;
 			case SL_WRITING:
-				ioport_set_pin_level(LED2_GPIO, 0);
 				ch_select = ioport_get_pin_level(ch_select_pin);
 				if(channel_to_write != ch_select)
 				{
 					channel_to_write = ch_select;
 					i = 0;
 					ch_written = false;
+					enable_spi_slave_interrupt();
 					ioport_set_pin_level(is_written_pin, 0);
 				}
 				
 				if(ch_written)
 				{
 					ioport_set_pin_level(is_written_pin, 1);
+					disable_interrupts();
 				}
 				
 				restart();

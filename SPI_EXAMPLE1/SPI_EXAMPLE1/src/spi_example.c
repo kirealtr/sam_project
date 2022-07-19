@@ -71,9 +71,6 @@ volatile uint8_t counter = 0;
  */
 static void spi_slave_initialize(void)
 {	
-	/* Configure SPI interrupts for slave only. */
-	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
-	NVIC_EnableIRQ(SPI_IRQn);
 	/* Configure an SPI peripheral. */
 	spi_enable_clock(SPI_SLAVE_BASE);
 
@@ -85,7 +82,7 @@ static void spi_slave_initialize(void)
 	spi_set_clock_polarity(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_POLARITY);
 	spi_set_clock_phase(SPI_SLAVE_BASE, SPI_CHIP_SEL, SPI_CLK_PHASE);
 	spi_set_bits_per_transfer(SPI_SLAVE_BASE, SPI_CHIP_SEL, bits_per_transfer);
-	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_TDRE);
+	spi_enable_interrupt(SPI_SLAVE_BASE, SPI_IER_NSSR);
 	spi_enable(SPI_SLAVE_BASE);
 	
 }
@@ -168,8 +165,12 @@ int main(void)
 	
 	spi_slave_initialize();
 	
+	NVIC_DisableIRQ((IRQn_Type) ID_TC0);
+	NVIC_DisableIRQ(SPI_IRQn);
+	NVIC_ClearPendingIRQ(SPI_IRQn);
+	NVIC_SetPriority(SPI_IRQn, 0);
+	NVIC_EnableIRQ(SPI_IRQn);
 
-	while (1) ;
-	
+	while (1);
 }
 
