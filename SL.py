@@ -47,6 +47,9 @@ try:
         print(ch)
     
     GPIO.output(GO_pin, 0)
+    
+    data[0].pop(0)
+    data[1].pop(0)
     plt.plot(data[0])
     plt.plot(data[1])
     
