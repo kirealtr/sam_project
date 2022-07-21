@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 spi = spidev.SpiDev()
 spi.open(0, 0)
 spi.mode = 0b01
-spi.max_speed_hz = 10000000
+spi.max_speed_hz = 5000000
 
 GO_pin = 17
 is_sampled_pin = 27
@@ -50,8 +50,8 @@ try:
     
     data[0].pop(0)
     data[1].pop(0)
-    plt.plot(data[0])
-    plt.plot(data[1])
+    plt.plot(data[0]) #blue
+    plt.plot(data[1]) #orange
     
     plt.show()
 
