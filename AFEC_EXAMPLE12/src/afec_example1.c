@@ -16,7 +16,15 @@
 #define MAX_DIGITAL     (4095UL)
 
 #define channel_0 AFEC_CHANNEL_4 // PB0
-#define channel_1 AFEC_CHANNEL_5 // PB1
+#define channel_1 AFEC_CHANNEL_2 // PA19
+#define set_trigger_level_ch AFEC_CHANNEL_5 //PB1
+
+/*	AFE0_AD0 - PA17
+	AFE0_AD1 - PA18
+	AFE0_AD2 - PA19
+	AFE0_AD3 - PA20
+	AFE0_AD4 - PB0
+	AFE0_AD5 - PB1  */
 
 #define period 0.01
 #define freq 100000
@@ -29,13 +37,6 @@
 #define is_sampled_pin IOPORT_CREATE_PIN(PIOC, 30) // yellow wire, GPIO27
 #define ch_select_pin IOPORT_CREATE_PIN(PIOC, 29) // blue wire, GPIO22
 #define is_written_pin IOPORT_CREATE_PIN(PIOC, 28) // green  wire, GPIO23
-
-/*	AFE0_AD0 - PA17
-	AFE0_AD1 - PA18
-	AFE0_AD2 - PA19
-	AFE0_AD3 - PA20
-	AFE0_AD4 - PB0
-	AFE0_AD5 - PB1  */
 
 /* Chip select. */
 #define SPI_CHIP_SEL 0
@@ -55,11 +56,10 @@
 
 #define BITS_PER_TRANSFER SPI_CSR_BITS_16_BIT
 
-#define DATA_SIZE 10000
+#define DATA_SIZE 25000
 
 #define PRE_TRIGGER_SAMPLES DATA_SIZE/10
-#define TRIGGER_LEVEL 2048
-#define TRIGGER_CHANNEL 1
+#define TRIGGER_CHANNEL 0
 
 static uint16_t data[2][DATA_SIZE];
 volatile uint32_t i = 0;
@@ -72,6 +72,8 @@ volatile bool GO_status = false;
 
 volatile bool trigger_hit = false;
 
+static void configure_tc(void);
+
 typedef enum{
 	SL_READY = 0,
 	SL_SAMPLING,
@@ -79,6 +81,32 @@ typedef enum{
 	} sl_state_t;
 	
 volatile sl_state_t state;
+
+volatile uint16_t trigger_level = 0;
+
+static void set_default_pin_levels(void)
+{
+	/* Response pin will be on high level when sampling is done */
+	ioport_set_pin_level(is_sampled_pin, 0);
+	ioport_set_pin_level(is_written_pin, 1);
+	ioport_set_pin_level(LED0_GPIO, 0);
+	ioport_set_pin_level(LED1_GPIO, 1);
+	ioport_set_pin_level(LED2_GPIO, 1);
+}
+
+static void restart(void)
+{
+	GO_status = ioport_get_pin_level(GO_pin);
+	if (!GO_status)
+	{
+		set_default_pin_levels();
+		i = 0;
+		state = SL_READY;
+		configure_tc();
+		buffer_full = false;
+		trigger_hit = false;
+	}
+}
 
 static void spi_slave_initialize(void)
 {
@@ -102,7 +130,6 @@ static void spi_slave_initialize(void)
 	spi_enable(SPI_SLAVE_BASE);
 }
 
-
 static void spi_slave_transfer(void)
 {
 	if(channel_to_write > 1)
@@ -113,16 +140,16 @@ static void spi_slave_transfer(void)
 	if(i < DATA_SIZE)
 	{
 		spi_write(SPI_SLAVE_BASE, data[channel_to_write][i], 0, 0);
-		i++; 
+		i++;
 	}
 	else ch_written = true;
 }
 
 void SPI_Handler(void)
-{	
+{
 	spi_slave_transfer();
+	restart();
 }
-
 
 static void configure_console(void)
 {
@@ -145,12 +172,21 @@ static void get_data(void)
 		data[0][i] = afec_channel_get_value(AFEC0, channel_0);
 		data[1][i] = afec_channel_get_value(AFEC0, channel_1);
 		
-		if (data[TRIGGER_CHANNEL][i] >= TRIGGER_LEVEL && i > 4) trigger_hit = true;
+		if (data[TRIGGER_CHANNEL][i] >= trigger_level && i > 4)
+			trigger_hit = true;
 		
-		if (i >= PRE_TRIGGER_SAMPLES && !trigger_hit) i = 0;
-		else i++;
+		if (i >= PRE_TRIGGER_SAMPLES && !trigger_hit)
+			i = 0;
+		else 
+			i++;
 	}
 	else buffer_full = true;
+}
+
+static void get_trigger_level(void)
+{
+	afec_start_software_conversion(AFEC0);
+	trigger_level = afec_channel_get_value(AFEC0, set_trigger_level_ch);
 }
 
 void TC0_Handler(void)
@@ -164,7 +200,10 @@ void TC0_Handler(void)
 	UNUSED(ul_dummy);
 	
 	/* Measure voltage. */
-	get_data();
+	if (state == SL_READY)
+		get_trigger_level();
+	else
+		get_data();
 }
 
 /* Configure Timer Counter 0 to generate an interrupt every (period) ms. */
@@ -209,15 +248,6 @@ static void mk_sound(void)
 	REG_PIOC_CODR |= PIO_PER_P17;
 } */
 
-static void set_default_pin_levels(void)
-{
-	/* Response pin will be on high level when sampling is done */
-	ioport_set_pin_level(is_sampled_pin, 0);
-	ioport_set_pin_level(is_written_pin, 1);
-	ioport_set_pin_level(LED0_GPIO, 1);
-	ioport_set_pin_level(LED1_GPIO, 1);
-	ioport_set_pin_level(LED2_GPIO, 1);
-}
 
 static void configure_pio(void)
 {
@@ -228,19 +258,6 @@ static void configure_pio(void)
 		ioport_set_pin_dir(is_written_pin, IOPORT_DIR_OUTPUT);
 }
 
-static void restart(void)
-{
-	GO_status = ioport_get_pin_level(GO_pin);
-	if (!GO_status)
-	{
-		set_default_pin_levels();
-		i = 0;
-		state = SL_READY;
-		
-		buffer_full = false;
-		trigger_hit = false;
-	}
-}
 
 int main(void)
 {
@@ -258,21 +275,23 @@ int main(void)
 	
 	configure_channel(channel_0);
 	configure_channel(channel_1);
+	configure_channel(set_trigger_level_ch);
 	
 	/* Configuring PIO */
 	configure_pio();
 	set_default_pin_levels();
 	
 	state = SL_READY;
+	configure_tc();
 
 	while (1) {
 		switch (state){
 			case SL_READY:
 				GO_status = ioport_get_pin_level(GO_pin);
 				if (GO_status)
-				{
-					configure_tc();	
-					ioport_set_pin_level(LED0_GPIO, 0);
+				{	
+					ioport_set_pin_level(LED0_GPIO, 1);
+					ioport_set_pin_level(LED1_GPIO, 0);
 					state = SL_SAMPLING;
 				}
 				break;
@@ -280,8 +299,8 @@ int main(void)
 				//mk_sound();
 				if (buffer_full) 
 				{	
-					ioport_set_pin_level(LED0_GPIO, 1);
-					ioport_set_pin_level(LED1_GPIO, 0);
+					ioport_set_pin_level(LED1_GPIO, 1);
+					ioport_set_pin_level(LED2_GPIO, 0);
 					ioport_set_pin_level(is_sampled_pin, 1);
 					tc_stop(TC0, 0);
 					state = SL_WRITING;
