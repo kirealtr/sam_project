@@ -7,37 +7,37 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
   1 .relocate     0000084c  20000000  00402480  00020000  2**3
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00018870  2000084c  00402ccc  0002084c  2**2
+  2 .bss          00004ff0  2000084c  00402ccc  0002084c  2**2
                   ALLOC
-  3 .stack        00003004  200190bc  0041b53c  0002084c  2**0
+  3 .stack        00003004  2000583c  00407cbc  0002084c  2**0
                   ALLOC
   4 .ARM.attributes 0000002e  00000000  00000000  0002084c  2**0
                   CONTENTS, READONLY
   5 .comment      00000059  00000000  00000000  0002087a  2**0
                   CONTENTS, READONLY
-  6 .debug_info   00018a85  00000000  00000000  000208d3  2**0
+  6 .debug_info   00018aa2  00000000  00000000  000208d3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00003546  00000000  00000000  00039358  2**0
+  7 .debug_abbrev 00003546  00000000  00000000  00039375  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_loc    000054b7  00000000  00000000  0003c89e  2**0
+  8 .debug_loc    000054b7  00000000  00000000  0003c8bb  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_aranges 00000ad8  00000000  00000000  00041d55  2**0
+  9 .debug_aranges 00000ad8  00000000  00000000  00041d72  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_ranges 00000a60  00000000  00000000  0004282d  2**0
+ 10 .debug_ranges 00000a60  00000000  00000000  0004284a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_macro  00018bff  00000000  00000000  0004328d  2**0
+ 11 .debug_macro  00018bff  00000000  00000000  000432aa  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_line   0000c91e  00000000  00000000  0005be8c  2**0
+ 12 .debug_line   0000c91e  00000000  00000000  0005bea9  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    00065f7b  00000000  00000000  000687aa  2**0
+ 13 .debug_str    00065f7b  00000000  00000000  000687c7  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_frame  00001e88  00000000  00000000  000ce728  2**2
+ 14 .debug_frame  00001e88  00000000  00000000  000ce744  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
 
 00400000 <exception_table>:
-  400000:	c0 c0 01 20 cd 10 40 00 cb 10 40 00 cb 10 40 00     ... ..@...@...@.
+  400000:	40 88 00 20 cd 10 40 00 cb 10 40 00 cb 10 40 00     @.. ..@...@...@.
   400010:	cb 10 40 00 cb 10 40 00 cb 10 40 00 00 00 00 00     ..@...@...@.....
 	...
   40002c:	cb 10 40 00 cb 10 40 00 00 00 00 00 cb 10 40 00     ..@...@.......@.
@@ -140,62 +140,62 @@ static void configure_tc(void)
   40018c:	4798      	blx	r3
 	tc_write_rc(TC0, 0, (ul_sysclk / ul_div) / freq);
   40018e:	9a03      	ldr	r2, [sp, #12]
-  400190:	fbb4 f2f2 	udiv	r2, r4, r2
-  400194:	0952      	lsrs	r2, r2, #5
-  400196:	4c15      	ldr	r4, [pc, #84]	; (4001ec <configure_tc+0x88>)
-  400198:	fba4 3202 	umull	r3, r2, r4, r2
-  40019c:	09d2      	lsrs	r2, r2, #7
-  40019e:	2100      	movs	r1, #0
-  4001a0:	4628      	mov	r0, r5
-  4001a2:	4b13      	ldr	r3, [pc, #76]	; (4001f0 <configure_tc+0x8c>)
-  4001a4:	4798      	blx	r3
+  400190:	fbb4 f4f2 	udiv	r4, r4, r2
+  400194:	4a15      	ldr	r2, [pc, #84]	; (4001ec <configure_tc+0x88>)
+  400196:	fba2 3204 	umull	r3, r2, r2, r4
+  40019a:	0c52      	lsrs	r2, r2, #17
+  40019c:	2100      	movs	r1, #0
+  40019e:	4628      	mov	r0, r5
+  4001a0:	4b13      	ldr	r3, [pc, #76]	; (4001f0 <configure_tc+0x8c>)
+  4001a2:	4798      	blx	r3
  */
 __STATIC_INLINE void __NVIC_DisableIRQ(IRQn_Type IRQn)
 {
   if ((int32_t)(IRQn) >= 0)
   {
     NVIC->ICER[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
-  4001a6:	4b13      	ldr	r3, [pc, #76]	; (4001f4 <configure_tc+0x90>)
-  4001a8:	f44f 2200 	mov.w	r2, #524288	; 0x80000
-  4001ac:	f8c3 2080 	str.w	r2, [r3, #128]	; 0x80
+  4001a4:	4b13      	ldr	r3, [pc, #76]	; (4001f4 <configure_tc+0x90>)
+  4001a6:	f44f 2200 	mov.w	r2, #524288	; 0x80000
+  4001aa:	f8c3 2080 	str.w	r2, [r3, #128]	; 0x80
   \details Acts as a special kind of Data Memory Barrier.
            It completes when all explicit memory accesses before this instruction complete.
  */
 __STATIC_FORCEINLINE void __DSB(void)
 {
   __ASM volatile ("dsb 0xF":::"memory");
-  4001b0:	f3bf 8f4f 	dsb	sy
+  4001ae:	f3bf 8f4f 	dsb	sy
   __ASM volatile ("isb 0xF":::"memory");
-  4001b4:	f3bf 8f6f 	isb	sy
+  4001b2:	f3bf 8f6f 	isb	sy
     NVIC->ISER[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
-  4001b8:	f44f 1200 	mov.w	r2, #2097152	; 0x200000
-  4001bc:	601a      	str	r2, [r3, #0]
+  4001b6:	f44f 1200 	mov.w	r2, #2097152	; 0x200000
+  4001ba:	601a      	str	r2, [r3, #0]
 
 	/* Configure and enable interrupt on RC compare */
 	NVIC_DisableIRQ(SPI_IRQn);
 	NVIC_EnableIRQ((IRQn_Type) ID_TC0);
 	tc_enable_interrupt(TC0, 0, TC_IER_CPCS);
-  4001be:	2210      	movs	r2, #16
-  4001c0:	2100      	movs	r1, #0
-  4001c2:	4628      	mov	r0, r5
-  4001c4:	4b0c      	ldr	r3, [pc, #48]	; (4001f8 <configure_tc+0x94>)
-  4001c6:	4798      	blx	r3
+  4001bc:	2210      	movs	r2, #16
+  4001be:	2100      	movs	r1, #0
+  4001c0:	4628      	mov	r0, r5
+  4001c2:	4b0d      	ldr	r3, [pc, #52]	; (4001f8 <configure_tc+0x94>)
+  4001c4:	4798      	blx	r3
 	
 	tc_start(TC0, 0);
-  4001c8:	2100      	movs	r1, #0
-  4001ca:	4628      	mov	r0, r5
-  4001cc:	4b0b      	ldr	r3, [pc, #44]	; (4001fc <configure_tc+0x98>)
-  4001ce:	4798      	blx	r3
+  4001c6:	2100      	movs	r1, #0
+  4001c8:	4628      	mov	r0, r5
+  4001ca:	4b0c      	ldr	r3, [pc, #48]	; (4001fc <configure_tc+0x98>)
+  4001cc:	4798      	blx	r3
 }
-  4001d0:	b005      	add	sp, #20
-  4001d2:	bd30      	pop	{r4, r5, pc}
+  4001ce:	b005      	add	sp, #20
+  4001d0:	bd30      	pop	{r4, r5, pc}
+  4001d2:	bf00      	nop
   4001d4:	00400e95 	.word	0x00400e95
   4001d8:	07270e00 	.word	0x07270e00
-  4001dc:	000186a0 	.word	0x000186a0
+  4001dc:	0007a120 	.word	0x0007a120
   4001e0:	00400fd5 	.word	0x00400fd5
   4001e4:	40090000 	.word	0x40090000
   4001e8:	00400f93 	.word	0x00400f93
-  4001ec:	0a7c5ac5 	.word	0x0a7c5ac5
+  4001ec:	431bde83 	.word	0x431bde83
   4001f0:	00400fbd 	.word	0x00400fbd
   4001f4:	e000e100 	.word	0xe000e100
   4001f8:	00400fc5 	.word	0x00400fc5
@@ -256,11 +256,11 @@ __always_inline static bool arch_ioport_get_pin_level(ioport_pin_t pin)
   40024e:	bd10      	pop	{r4, pc}
   400250:	400e1200 	.word	0x400e1200
   400254:	20000868 	.word	0x20000868
-  400258:	20018f0c 	.word	0x20018f0c
-  40025c:	20018fc0 	.word	0x20018fc0
+  400258:	2000568c 	.word	0x2000568c
+  40025c:	20005740 	.word	0x20005740
   400260:	00400165 	.word	0x00400165
   400264:	20000869 	.word	0x20000869
-  400268:	20018f10 	.word	0x20018f10
+  400268:	20005690 	.word	0x20005690
 
 0040026c <usart_serial_getchar>:
  * \param p_usart   Base address of the USART instance.
@@ -515,7 +515,7 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
 	if(i < DATA_SIZE)
   4003ce:	4b11      	ldr	r3, [pc, #68]	; (400414 <SPI_Handler+0x58>)
   4003d0:	681a      	ldr	r2, [r3, #0]
-  4003d2:	f246 13a7 	movw	r3, #24999	; 0x61a7
+  4003d2:	f241 3387 	movw	r3, #4999	; 0x1387
   4003d6:	429a      	cmp	r2, r3
   4003d8:	d903      	bls.n	4003e2 <SPI_Handler+0x26>
 	else ch_written = true;
@@ -528,7 +528,7 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   4003e4:	781a      	ldrb	r2, [r3, #0]
   4003e6:	4c0b      	ldr	r4, [pc, #44]	; (400414 <SPI_Handler+0x58>)
   4003e8:	6823      	ldr	r3, [r4, #0]
-  4003ea:	f246 11a8 	movw	r1, #25000	; 0x61a8
+  4003ea:	f241 3188 	movw	r1, #5000	; 0x1388
   4003ee:	fb02 3101 	mla	r1, r2, r1, r3
   4003f2:	2300      	movs	r3, #0
   4003f4:	461a      	mov	r2, r3
@@ -545,7 +545,7 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   40040a:	bf00      	nop
   40040c:	20000001 	.word	0x20000001
   400410:	00400201 	.word	0x00400201
-  400414:	20018f0c 	.word	0x20018f0c
+  400414:	2000568c 	.word	0x2000568c
   400418:	2000086a 	.word	0x2000086a
   40041c:	2000086c 	.word	0x2000086c
   400420:	40088000 	.word	0x40088000
@@ -567,13 +567,13 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   400438:	4b27      	ldr	r3, [pc, #156]	; (4004d8 <TC0_Handler+0xb0>)
   40043a:	781b      	ldrb	r3, [r3, #0]
   40043c:	2b00      	cmp	r3, #0
-  40043e:	d033      	beq.n	4004a8 <TC0_Handler+0x80>
+  40043e:	d032      	beq.n	4004a6 <TC0_Handler+0x7e>
 	if (i < DATA_SIZE)
   400440:	4b26      	ldr	r3, [pc, #152]	; (4004dc <TC0_Handler+0xb4>)
   400442:	681a      	ldr	r2, [r3, #0]
-  400444:	f246 13a7 	movw	r3, #24999	; 0x61a7
+  400444:	f241 3387 	movw	r3, #4999	; 0x1387
   400448:	429a      	cmp	r2, r3
-  40044a:	d83d      	bhi.n	4004c8 <TC0_Handler+0xa0>
+  40044a:	d83c      	bhi.n	4004c6 <TC0_Handler+0x9e>
 	afec->AFEC_CR = AFEC_CR_START;
   40044c:	4a24      	ldr	r2, [pc, #144]	; (4004e0 <TC0_Handler+0xb8>)
   40044e:	2402      	movs	r4, #2
@@ -582,7 +582,7 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   400452:	4822      	ldr	r0, [pc, #136]	; (4004dc <TC0_Handler+0xb4>)
   400454:	6803      	ldr	r3, [r0, #0]
 	afec->AFEC_CSELR = afec_ch;
-  400456:	2104      	movs	r1, #4
+  400456:	2103      	movs	r1, #3
   400458:	6651      	str	r1, [r2, #100]	; 0x64
 	return afec->AFEC_CDR;
   40045a:	6e95      	ldr	r5, [r2, #104]	; 0x68
@@ -594,8 +594,8 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   400464:	6654      	str	r4, [r2, #100]	; 0x64
 	return afec->AFEC_CDR;
   400466:	6e92      	ldr	r2, [r2, #104]	; 0x68
-  400468:	f503 43c3 	add.w	r3, r3, #24960	; 0x6180
-  40046c:	3328      	adds	r3, #40	; 0x28
+  400468:	f503 539c 	add.w	r3, r3, #4992	; 0x1380
+  40046c:	3308      	adds	r3, #8
   40046e:	f821 2013 	strh.w	r2, [r1, r3, lsl #1]
 		if (data[TRIGGER_CHANNEL][i] >= trigger_level && i > 4)
   400472:	6802      	ldr	r2, [r0, #0]
@@ -614,54 +614,54 @@ static inline void afec_channel_set_analog_offset(Afec *const afec,
   40048c:	701a      	strb	r2, [r3, #0]
 		if (i >= PRE_TRIGGER_SAMPLES && !trigger_hit)
   40048e:	4b13      	ldr	r3, [pc, #76]	; (4004dc <TC0_Handler+0xb4>)
-  400490:	681a      	ldr	r2, [r3, #0]
-  400492:	f640 13c3 	movw	r3, #2499	; 0x9c3
-  400496:	429a      	cmp	r2, r3
-  400498:	d911      	bls.n	4004be <TC0_Handler+0x96>
-  40049a:	4b14      	ldr	r3, [pc, #80]	; (4004ec <TC0_Handler+0xc4>)
-  40049c:	781b      	ldrb	r3, [r3, #0]
-  40049e:	b973      	cbnz	r3, 4004be <TC0_Handler+0x96>
+  400490:	681b      	ldr	r3, [r3, #0]
+  400492:	f5b3 7ffa 	cmp.w	r3, #500	; 0x1f4
+  400496:	d311      	bcc.n	4004bc <TC0_Handler+0x94>
+  400498:	4b14      	ldr	r3, [pc, #80]	; (4004ec <TC0_Handler+0xc4>)
+  40049a:	781b      	ldrb	r3, [r3, #0]
+  40049c:	b973      	cbnz	r3, 4004bc <TC0_Handler+0x94>
 			i = 0;
-  4004a0:	2200      	movs	r2, #0
-  4004a2:	4b0e      	ldr	r3, [pc, #56]	; (4004dc <TC0_Handler+0xb4>)
-  4004a4:	601a      	str	r2, [r3, #0]
-  4004a6:	e008      	b.n	4004ba <TC0_Handler+0x92>
+  40049e:	2200      	movs	r2, #0
+  4004a0:	4b0e      	ldr	r3, [pc, #56]	; (4004dc <TC0_Handler+0xb4>)
+  4004a2:	601a      	str	r2, [r3, #0]
+  4004a4:	e008      	b.n	4004b8 <TC0_Handler+0x90>
 	afec->AFEC_CR = AFEC_CR_START;
-  4004a8:	4b0d      	ldr	r3, [pc, #52]	; (4004e0 <TC0_Handler+0xb8>)
-  4004aa:	2202      	movs	r2, #2
-  4004ac:	601a      	str	r2, [r3, #0]
+  4004a6:	4b0e      	ldr	r3, [pc, #56]	; (4004e0 <TC0_Handler+0xb8>)
+  4004a8:	2202      	movs	r2, #2
+  4004aa:	601a      	str	r2, [r3, #0]
 	afec->AFEC_CSELR = afec_ch;
-  4004ae:	2205      	movs	r2, #5
-  4004b0:	665a      	str	r2, [r3, #100]	; 0x64
+  4004ac:	2205      	movs	r2, #5
+  4004ae:	665a      	str	r2, [r3, #100]	; 0x64
 	return afec->AFEC_CDR;
-  4004b2:	6e9b      	ldr	r3, [r3, #104]	; 0x68
+  4004b0:	6e9b      	ldr	r3, [r3, #104]	; 0x68
 	trigger_level = afec_channel_get_value(AFEC0, set_trigger_level_ch);
-  4004b4:	b29b      	uxth	r3, r3
-  4004b6:	4a0c      	ldr	r2, [pc, #48]	; (4004e8 <TC0_Handler+0xc0>)
-  4004b8:	8013      	strh	r3, [r2, #0]
+  4004b2:	b29b      	uxth	r3, r3
+  4004b4:	4a0c      	ldr	r2, [pc, #48]	; (4004e8 <TC0_Handler+0xc0>)
+  4004b6:	8013      	strh	r3, [r2, #0]
 }
-  4004ba:	b003      	add	sp, #12
-  4004bc:	bd30      	pop	{r4, r5, pc}
+  4004b8:	b003      	add	sp, #12
+  4004ba:	bd30      	pop	{r4, r5, pc}
 			i++;
-  4004be:	4a07      	ldr	r2, [pc, #28]	; (4004dc <TC0_Handler+0xb4>)
-  4004c0:	6813      	ldr	r3, [r2, #0]
-  4004c2:	3301      	adds	r3, #1
-  4004c4:	6013      	str	r3, [r2, #0]
-  4004c6:	e7f8      	b.n	4004ba <TC0_Handler+0x92>
+  4004bc:	4a07      	ldr	r2, [pc, #28]	; (4004dc <TC0_Handler+0xb4>)
+  4004be:	6813      	ldr	r3, [r2, #0]
+  4004c0:	3301      	adds	r3, #1
+  4004c2:	6013      	str	r3, [r2, #0]
+  4004c4:	e7f8      	b.n	4004b8 <TC0_Handler+0x90>
 	else buffer_full = true;
-  4004c8:	2201      	movs	r2, #1
-  4004ca:	4b09      	ldr	r3, [pc, #36]	; (4004f0 <TC0_Handler+0xc8>)
-  4004cc:	701a      	strb	r2, [r3, #0]
+  4004c6:	2201      	movs	r2, #1
+  4004c8:	4b09      	ldr	r3, [pc, #36]	; (4004f0 <TC0_Handler+0xc8>)
+  4004ca:	701a      	strb	r2, [r3, #0]
 }
-  4004ce:	e7f4      	b.n	4004ba <TC0_Handler+0x92>
+  4004cc:	e7f4      	b.n	4004b8 <TC0_Handler+0x90>
+  4004ce:	bf00      	nop
   4004d0:	40090000 	.word	0x40090000
   4004d4:	00400fcd 	.word	0x00400fcd
-  4004d8:	20018fc0 	.word	0x20018fc0
-  4004dc:	20018f0c 	.word	0x20018f0c
+  4004d8:	20005740 	.word	0x20005740
+  4004dc:	2000568c 	.word	0x2000568c
   4004e0:	400b0000 	.word	0x400b0000
   4004e4:	2000086c 	.word	0x2000086c
-  4004e8:	20018f12 	.word	0x20018f12
-  4004ec:	20018f10 	.word	0x20018f10
+  4004e8:	20005692 	.word	0x20005692
+  4004ec:	20005690 	.word	0x20005690
   4004f0:	20000869 	.word	0x20000869
 
 004004f4 <main>:
@@ -770,7 +770,7 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   400570:	4798      	blx	r3
 	
 	configure_channel(channel_0);
-  400572:	2004      	movs	r0, #4
+  400572:	2003      	movs	r0, #3
   400574:	4c79      	ldr	r4, [pc, #484]	; (40075c <main+0x268>)
   400576:	47a0      	blx	r4
 	configure_channel(channel_1);
@@ -1068,11 +1068,11 @@ static inline void spi_enable_interrupt(Spi *p_spi, uint32_t ul_sources)
   40071c:	004008a5 	.word	0x004008a5
   400720:	00400e95 	.word	0x00400e95
   400724:	400e0600 	.word	0x400e0600
-  400728:	20018fd4 	.word	0x20018fd4
+  400728:	20005754 	.word	0x20005754
   40072c:	004002f5 	.word	0x004002f5
-  400730:	20018fd0 	.word	0x20018fd0
+  400730:	20005750 	.word	0x20005750
   400734:	0040026d 	.word	0x0040026d
-  400738:	20018fcc 	.word	0x20018fcc
+  400738:	2000574c 	.word	0x2000574c
   40073c:	07270e00 	.word	0x07270e00
   400740:	00401045 	.word	0x00401045
   400744:	20000008 	.word	0x20000008
@@ -1083,7 +1083,7 @@ static inline void spi_enable_interrupt(Spi *p_spi, uint32_t ul_sources)
   400758:	00400b79 	.word	0x00400b79
   40075c:	00400375 	.word	0x00400375
   400760:	400e1200 	.word	0x400e1200
-  400764:	20018fc0 	.word	0x20018fc0
+  400764:	20005740 	.word	0x20005740
   400768:	00400165 	.word	0x00400165
   40076c:	400e1400 	.word	0x400e1400
   400770:	400e0e00 	.word	0x400e0e00
@@ -1092,7 +1092,7 @@ static inline void spi_enable_interrupt(Spi *p_spi, uint32_t ul_sources)
   40077c:	00400201 	.word	0x00400201
   400780:	20000000 	.word	0x20000000
   400784:	20000001 	.word	0x20000001
-  400788:	20018f0c 	.word	0x20018f0c
+  400788:	2000568c 	.word	0x2000568c
   40078c:	2000086a 	.word	0x2000086a
   400790:	e000e100 	.word	0xe000e100
   400794:	40090000 	.word	0x40090000
@@ -1251,8 +1251,8 @@ _read (int file, char * ptr, int len)
   400846:	4680      	mov	r8, r0
   400848:	e7f7      	b.n	40083a <_read+0x22>
   40084a:	bf00      	nop
-  40084c:	20018fd4 	.word	0x20018fd4
-  400850:	20018fcc 	.word	0x20018fcc
+  40084c:	20005754 	.word	0x20005754
+  400850:	2000574c 	.word	0x2000574c
 
 00400854 <_write>:
 int __attribute__((weak))
@@ -1303,8 +1303,8 @@ _write (int file, const char *ptr, int len)
 }
   400896:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
   40089a:	bf00      	nop
-  40089c:	20018fd0 	.word	0x20018fd0
-  4008a0:	20018fd4 	.word	0x20018fd4
+  40089c:	20005750 	.word	0x20005750
+  4008a0:	20005754 	.word	0x20005754
 
 004008a4 <board_init>:
 		ioport_set_pin_mode(pin, mode);\
@@ -1705,7 +1705,7 @@ static inline uint32_t afec_get_interrupt_mask(Afec *const afec)
   400b00:	bd70      	pop	{r4, r5, r6, pc}
   400b02:	bf00      	nop
   400b04:	400b4000 	.word	0x400b4000
-  400b08:	20018fd8 	.word	0x20018fd8
+  400b08:	20005758 	.word	0x20005758
 
 00400b0c <afec_ch_set_config>:
 {
@@ -1902,8 +1902,8 @@ static inline uint32_t afec_get_interrupt_mask(Afec *const afec)
   400c3a:	bf00      	nop
   400c3c:	400b0000 	.word	0x400b0000
   400c40:	400b4000 	.word	0x400b4000
-  400c44:	20018fd4 	.word	0x20018fd4
-  400c48:	20019030 	.word	0x20019030
+  400c44:	20005754 	.word	0x20005754
+  400c48:	200057b0 	.word	0x200057b0
 
 00400c4c <AFEC0_Handler>:
 
@@ -2029,7 +2029,7 @@ static inline void cpu_irq_restore(irqflags_t flags)
   400cc6:	bf00      	nop
   400cc8:	400b4000 	.word	0x400b4000
   400ccc:	00400e95 	.word	0x00400e95
-  400cd0:	20018fc4 	.word	0x20018fc4
+  400cd0:	20005744 	.word	0x20005744
   400cd4:	20000002 	.word	0x20000002
 
 00400cd8 <pio_get_interrupt_status>:
@@ -2129,9 +2129,9 @@ void pio_handler_process(Pio *p_pio, uint32_t ul_id)
   400d30:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
   400d34:	00400cd9 	.word	0x00400cd9
   400d38:	00400cdd 	.word	0x00400cdd
-  400d3c:	20018f14 	.word	0x20018f14
-  400d40:	20019090 	.word	0x20019090
-  400d44:	20018f84 	.word	0x20018f84
+  400d3c:	20005694 	.word	0x20005694
+  400d40:	20005810 	.word	0x20005810
+  400d44:	20005704 	.word	0x20005704
 
 00400d48 <PIOA_Handler>:
 /**
@@ -3078,7 +3078,7 @@ __always_inline static void fpu_enable(void)
   401168:	20000000 	.word	0x20000000
   40116c:	00402480 	.word	0x00402480
   401170:	2000084c 	.word	0x2000084c
-  401174:	200190bc 	.word	0x200190bc
+  401174:	2000583c 	.word	0x2000583c
   401178:	2000084c 	.word	0x2000084c
   40117c:	e000ed00 	.word	0xe000ed00
   401180:	00400000 	.word	0x00400000
@@ -3356,9 +3356,9 @@ void system_init_flash( uint32_t ul_clk )
 }
   40133c:	4770      	bx	lr
   40133e:	bf00      	nop
-  401340:	20018f88 	.word	0x20018f88
+  401340:	20005708 	.word	0x20005708
   401344:	2001fffc 	.word	0x2001fffc
-  401348:	2001c0c0 	.word	0x2001c0c0
+  401348:	20008840 	.word	0x20008840
 
 0040134c <_close>:
 }
@@ -3924,20 +3924,20 @@ extern int _lseek(int file, int ptr, int dir)
   401842:	e8bd 4010 	ldmia.w	sp!, {r4, lr}
   401846:	f000 b991 	b.w	401b6c <__retarget_lock_release_recursive>
   40184a:	bf00      	nop
-  40184c:	200190a0 	.word	0x200190a0
+  40184c:	20005820 	.word	0x20005820
   401850:	004017a1 	.word	0x004017a1
 
 00401854 <__sfp_lock_acquire>:
   401854:	4801      	ldr	r0, [pc, #4]	; (40185c <__sfp_lock_acquire+0x8>)
   401856:	f000 b987 	b.w	401b68 <__retarget_lock_acquire_recursive>
   40185a:	bf00      	nop
-  40185c:	200190b4 	.word	0x200190b4
+  40185c:	20005834 	.word	0x20005834
 
 00401860 <__sfp_lock_release>:
   401860:	4801      	ldr	r0, [pc, #4]	; (401868 <__sfp_lock_release+0x8>)
   401862:	f000 b983 	b.w	401b6c <__retarget_lock_release_recursive>
   401866:	bf00      	nop
-  401868:	200190b4 	.word	0x200190b4
+  401868:	20005834 	.word	0x20005834
 
 0040186c <__libc_fini_array>:
   40186c:	b538      	push	{r3, r4, r5, lr}
@@ -4022,7 +4022,7 @@ extern int _lseek(int file, int ptr, int dir)
   401930:	e7d5      	b.n	4018de <_malloc_trim_r+0x3e>
   401932:	bf00      	nop
   401934:	2000043c 	.word	0x2000043c
-  401938:	20018f8c 	.word	0x20018f8c
+  401938:	2000570c 	.word	0x2000570c
   40193c:	20000844 	.word	0x20000844
 
 00401940 <_free_r>:
@@ -4213,7 +4213,7 @@ extern int _lseek(int file, int ptr, int dir)
   401afc:	2000043c 	.word	0x2000043c
   401b00:	20000444 	.word	0x20000444
   401b04:	20000848 	.word	0x20000848
-  401b08:	20018fbc 	.word	0x20018fbc
+  401b08:	2000573c 	.word	0x2000573c
 
 00401b0c <_fwalk_reent>:
   401b0c:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -4620,10 +4620,10 @@ extern int _lseek(int file, int ptr, int dir)
   401f1c:	e680      	b.n	401c20 <_malloc_r+0x44>
   401f1e:	bf00      	nop
   401f20:	2000043c 	.word	0x2000043c
-  401f24:	20018fbc 	.word	0x20018fbc
-  401f28:	20018f8c 	.word	0x20018f8c
-  401f2c:	20018fb4 	.word	0x20018fb4
-  401f30:	20018fb8 	.word	0x20018fb8
+  401f24:	2000573c 	.word	0x2000573c
+  401f28:	2000570c 	.word	0x2000570c
+  401f2c:	20005734 	.word	0x20005734
+  401f30:	20005738 	.word	0x20005738
   401f34:	20000444 	.word	0x20000444
   401f38:	20000844 	.word	0x20000844
   401f3c:	0a5a      	lsrs	r2, r3, #9
@@ -4819,19 +4819,19 @@ extern int _lseek(int file, int ptr, int dir)
   402130:	f106 0308 	add.w	r3, r6, #8
   402134:	e600      	b.n	401d38 <_malloc_r+0x15c>
   402136:	bf00      	nop
-  402138:	20018f8c 	.word	0x20018f8c
+  402138:	2000570c 	.word	0x2000570c
 
 0040213c <__malloc_lock>:
   40213c:	4801      	ldr	r0, [pc, #4]	; (402144 <__malloc_lock+0x8>)
   40213e:	f7ff bd13 	b.w	401b68 <__retarget_lock_acquire_recursive>
   402142:	bf00      	nop
-  402144:	200190a4 	.word	0x200190a4
+  402144:	20005824 	.word	0x20005824
 
 00402148 <__malloc_unlock>:
   402148:	4801      	ldr	r0, [pc, #4]	; (402150 <__malloc_unlock+0x8>)
   40214a:	f7ff bd0f 	b.w	401b6c <__retarget_lock_release_recursive>
   40214e:	bf00      	nop
-  402150:	200190a4 	.word	0x200190a4
+  402150:	20005824 	.word	0x20005824
 
 00402154 <_sbrk_r>:
   402154:	b538      	push	{r3, r4, r5, lr}
@@ -4849,7 +4849,7 @@ extern int _lseek(int file, int ptr, int dir)
   40216e:	d0fb      	beq.n	402168 <_sbrk_r+0x14>
   402170:	602b      	str	r3, [r5, #0]
   402172:	bd38      	pop	{r3, r4, r5, pc}
-  402174:	200190b8 	.word	0x200190b8
+  402174:	20005838 	.word	0x20005838
 
 00402178 <__sread>:
   402178:	b510      	push	{r4, lr}
@@ -4929,7 +4929,7 @@ extern int _lseek(int file, int ptr, int dir)
   402222:	6033      	str	r3, [r6, #0]
   402224:	bd70      	pop	{r4, r5, r6, pc}
   402226:	bf00      	nop
-  402228:	200190b8 	.word	0x200190b8
+  402228:	20005838 	.word	0x20005838
 
 0040222c <__register_exitproc>:
   40222c:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -5017,7 +5017,7 @@ extern int _lseek(int file, int ptr, int dir)
   40230a:	d0fb      	beq.n	402304 <_close_r+0x14>
   40230c:	602b      	str	r3, [r5, #0]
   40230e:	bd38      	pop	{r3, r4, r5, pc}
-  402310:	200190b8 	.word	0x200190b8
+  402310:	20005838 	.word	0x20005838
 
 00402314 <_fclose_r>:
   402314:	b570      	push	{r4, r5, r6, lr}
@@ -5121,7 +5121,7 @@ extern int _lseek(int file, int ptr, int dir)
   4023f6:	d0fb      	beq.n	4023f0 <_fstat_r+0x18>
   4023f8:	602b      	str	r3, [r5, #0]
   4023fa:	bd38      	pop	{r3, r4, r5, pc}
-  4023fc:	200190b8 	.word	0x200190b8
+  4023fc:	20005838 	.word	0x20005838
 
 00402400 <_lseek_r>:
   402400:	b570      	push	{r4, r5, r6, lr}
@@ -5143,7 +5143,7 @@ extern int _lseek(int file, int ptr, int dir)
   402422:	6033      	str	r3, [r6, #0]
   402424:	bd70      	pop	{r4, r5, r6, pc}
   402426:	bf00      	nop
-  402428:	200190b8 	.word	0x200190b8
+  402428:	20005838 	.word	0x20005838
 
 0040242c <_read_r>:
   40242c:	b570      	push	{r4, r5, r6, lr}
@@ -5165,7 +5165,7 @@ extern int _lseek(int file, int ptr, int dir)
   40244e:	6033      	str	r3, [r6, #0]
   402450:	bd70      	pop	{r4, r5, r6, pc}
   402452:	bf00      	nop
-  402454:	200190b8 	.word	0x200190b8
+  402454:	20005838 	.word	0x20005838
 
 00402458 <_global_impure_ptr>:
   402458:	20000010                                ... 
