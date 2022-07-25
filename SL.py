@@ -25,6 +25,11 @@ def spi_read():
 
 GPIO.output(GO_pin, 0)
 
+def write_list(arr, file_name):
+    arr_str = list(map(str, arr))
+    with open(file_name, 'w') as file:
+        file.write('\n'.join(arr_str))
+
 try:
     data = [[] for _ in range(2)]
     # GO command to SAM
@@ -43,8 +48,6 @@ try:
         while not GPIO.input(is_written_pin):
             sample = spi_read()
             data[ch].append(sample)
-
-        print(ch)
     
     GPIO.output(GO_pin, 0)
     
@@ -53,8 +56,10 @@ try:
     plt.plot(data[0]) #blue
     plt.plot(data[1]) #orange
     
+    write_list(data[0], 'data_0.txt')
+    write_list(data[1], 'data_1.txt')
+    
     plt.show()
-
     
 finally:
     GPIO.output(GO_pin, 0)
