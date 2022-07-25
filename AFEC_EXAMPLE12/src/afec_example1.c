@@ -15,7 +15,7 @@
 /** The maximal digital value */
 #define MAX_DIGITAL     (4095UL)
 
-#define channel_0 AFEC_CHANNEL_4 // PB0
+#define channel_0 AFEC_CHANNEL_3 // PA20
 #define channel_1 AFEC_CHANNEL_2 // PA19
 #define set_trigger_level_ch AFEC_CHANNEL_5 //PB1
 
@@ -26,8 +26,8 @@
 	AFE0_AD4 - PB0
 	AFE0_AD5 - PB1  */
 
-#define period 0.01
-#define freq 100000
+#define period 0.002
+#define freq 500000
 
 /* Creating PIO pins */
 // #define sound_pin IOPORT_CREATE_PIN(PIOD, 28)
@@ -56,7 +56,7 @@
 
 #define BITS_PER_TRANSFER SPI_CSR_BITS_16_BIT
 
-#define DATA_SIZE 25000
+#define DATA_SIZE 5000
 
 #define PRE_TRIGGER_SAMPLES DATA_SIZE/10
 #define TRIGGER_CHANNEL 0

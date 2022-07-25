@@ -6335,7 +6335,7 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
                 0x2000084c                . = ALIGN (0x4)
                 0x2000084c                _erelocate = .
 
-.bss            0x2000084c    0x18870 load address 0x00402ccc
+.bss            0x2000084c     0x4ff0 load address 0x00402ccc
                 0x2000084c                . = ALIGN (0x4)
                 0x2000084c                _sbss = .
                 0x2000084c                _szero = .
@@ -6351,77 +6351,77 @@ LOAD c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin
                 0x2000086a        0x1 src/afec_example1.o
                 0x2000086a                ch_written
  *fill*         0x2000086b        0x1 
- .bss.data      0x2000086c    0x186a0 src/afec_example1.o
- .bss.i         0x20018f0c        0x4 src/afec_example1.o
-                0x20018f0c                i
+ .bss.data      0x2000086c     0x4e20 src/afec_example1.o
+ .bss.i         0x2000568c        0x4 src/afec_example1.o
+                0x2000568c                i
  .bss.trigger_hit
-                0x20018f10        0x1 src/afec_example1.o
-                0x20018f10                trigger_hit
- *fill*         0x20018f11        0x1 
+                0x20005690        0x1 src/afec_example1.o
+                0x20005690                trigger_hit
+ *fill*         0x20005691        0x1 
  .bss.trigger_level
-                0x20018f12        0x2 src/afec_example1.o
-                0x20018f12                trigger_level
+                0x20005692        0x2 src/afec_example1.o
+                0x20005692                trigger_level
  .bss.gs_interrupt_sources
-                0x20018f14       0x70 src/ASF/sam/drivers/pio/pio_handler.o
+                0x20005694       0x70 src/ASF/sam/drivers/pio/pio_handler.o
  .bss.pio_capture_handler
-                0x20018f84        0x4 src/ASF/sam/drivers/pio/pio_handler.o
+                0x20005704        0x4 src/ASF/sam/drivers/pio/pio_handler.o
  .bss.heap.6420
-                0x20018f88        0x4 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+                0x20005708        0x4 src/ASF/sam/utils/syscalls/gcc/syscalls.o
  .bss.__malloc_current_mallinfo
-                0x20018f8c       0x28 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
-                0x20018f8c                __malloc_current_mallinfo
+                0x2000570c       0x28 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
+                0x2000570c                __malloc_current_mallinfo
  .bss.__malloc_max_sbrked_mem
-                0x20018fb4        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
-                0x20018fb4                __malloc_max_sbrked_mem
+                0x20005734        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
+                0x20005734                __malloc_max_sbrked_mem
  .bss.__malloc_max_total_mem
-                0x20018fb8        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
-                0x20018fb8                __malloc_max_total_mem
+                0x20005738        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
+                0x20005738                __malloc_max_total_mem
  .bss.__malloc_top_pad
-                0x20018fbc        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
-                0x20018fbc                __malloc_top_pad
+                0x2000573c        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-mallocr.o)
+                0x2000573c                __malloc_top_pad
  *(COMMON)
- COMMON         0x20018fc0        0x1 src/afec_example1.o
-                0x20018fc0                state
- *fill*         0x20018fc1        0x3 
- COMMON         0x20018fc4        0x6 src/ASF/common/services/sleepmgr/sam/sleepmgr.o
-                0x20018fc4                sleepmgr_locks
- *fill*         0x20018fca        0x2 
- COMMON         0x20018fcc        0x4 src/ASF/common/utils/stdio/read.o
-                0x20018fcc                ptr_get
- COMMON         0x20018fd0        0x8 src/ASF/common/utils/stdio/write.o
-                0x20018fd0                ptr_put
-                0x20018fd4                stdio_base
- COMMON         0x20018fd8       0xb8 src/ASF/sam/drivers/afec/afec.o
-                0x20018fd8                afec_callback_pointer
- COMMON         0x20019090        0x4 src/ASF/sam/drivers/pio/pio.o
-                0x20019090                pio_capture_enable_flag
- COMMON         0x20019094       0x21 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-lock.o)
-                0x20019094                __lock___atexit_recursive_mutex
-                0x20019098                __lock___arc4random_mutex
-                0x2001909c                __lock___env_recursive_mutex
-                0x200190a0                __lock___sinit_recursive_mutex
-                0x200190a4                __lock___malloc_recursive_mutex
-                0x200190a8                __lock___at_quick_exit_mutex
-                0x200190ac                __lock___dd_hash_mutex
-                0x200190b0                __lock___tz_mutex
-                0x200190b4                __lock___sfp_recursive_mutex
- *fill*         0x200190b5        0x3 
- COMMON         0x200190b8        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-reent.o)
-                0x200190b8                errno
-                0x200190bc                . = ALIGN (0x4)
-                0x200190bc                _ebss = .
-                0x200190bc                _ezero = .
+ COMMON         0x20005740        0x1 src/afec_example1.o
+                0x20005740                state
+ *fill*         0x20005741        0x3 
+ COMMON         0x20005744        0x6 src/ASF/common/services/sleepmgr/sam/sleepmgr.o
+                0x20005744                sleepmgr_locks
+ *fill*         0x2000574a        0x2 
+ COMMON         0x2000574c        0x4 src/ASF/common/utils/stdio/read.o
+                0x2000574c                ptr_get
+ COMMON         0x20005750        0x8 src/ASF/common/utils/stdio/write.o
+                0x20005750                ptr_put
+                0x20005754                stdio_base
+ COMMON         0x20005758       0xb8 src/ASF/sam/drivers/afec/afec.o
+                0x20005758                afec_callback_pointer
+ COMMON         0x20005810        0x4 src/ASF/sam/drivers/pio/pio.o
+                0x20005810                pio_capture_enable_flag
+ COMMON         0x20005814       0x21 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-lock.o)
+                0x20005814                __lock___atexit_recursive_mutex
+                0x20005818                __lock___arc4random_mutex
+                0x2000581c                __lock___env_recursive_mutex
+                0x20005820                __lock___sinit_recursive_mutex
+                0x20005824                __lock___malloc_recursive_mutex
+                0x20005828                __lock___at_quick_exit_mutex
+                0x2000582c                __lock___dd_hash_mutex
+                0x20005830                __lock___tz_mutex
+                0x20005834                __lock___sfp_recursive_mutex
+ *fill*         0x20005835        0x3 
+ COMMON         0x20005838        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/arm/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/6.3.1/../../../../arm-none-eabi/lib/thumb/v7e-m\libc.a(lib_a-reent.o)
+                0x20005838                errno
+                0x2000583c                . = ALIGN (0x4)
+                0x2000583c                _ebss = .
+                0x2000583c                _ezero = .
 
-.stack          0x200190bc     0x3004 load address 0x0041b53c
-                0x200190c0                . = ALIGN (0x8)
- *fill*         0x200190bc        0x4 
-                0x200190c0                _sstack = .
-                0x2001c0c0                . = (. + __stack_size__)
- *fill*         0x200190c0     0x3000 
-                0x2001c0c0                . = ALIGN (0x8)
-                0x2001c0c0                _estack = .
-                0x2001c0c0                . = ALIGN (0x4)
-                0x2001c0c0                _end = .
+.stack          0x2000583c     0x3004 load address 0x00407cbc
+                0x20005840                . = ALIGN (0x8)
+ *fill*         0x2000583c        0x4 
+                0x20005840                _sstack = .
+                0x20008840                . = (. + __stack_size__)
+ *fill*         0x20005840     0x3000 
+                0x20008840                . = ALIGN (0x8)
+                0x20008840                _estack = .
+                0x20008840                . = ALIGN (0x4)
+                0x20008840                _end = .
 OUTPUT(AFEC_EXAMPLE12.elf elf32-littlearm)
 
 .ARM.attributes
@@ -6547,26 +6547,26 @@ OUTPUT(AFEC_EXAMPLE12.elf elf32-littlearm)
  .comment       0x00000059       0x5a src/ASF/sam/utils/cmsis/sam4e/source/templates/system_sam4e.o
  .comment       0x00000059       0x5a src/ASF/sam/utils/syscalls/gcc/syscalls.o
 
-.debug_info     0x00000000    0x18a85
- .debug_info    0x00000000     0x3c0e src/afec_example1.o
- .debug_info    0x00003c0e     0x1124 src/ASF/common/services/clock/sam4e/sysclk.o
- .debug_info    0x00004d32      0xa8e src/ASF/common/services/sleepmgr/sam/sleepmgr.o
- .debug_info    0x000057c0      0xaff src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_info    0x000062bf      0xac9 src/ASF/common/utils/stdio/read.o
- .debug_info    0x00006d88      0xac6 src/ASF/common/utils/stdio/write.o
- .debug_info    0x0000784e     0x1f9f src/ASF/sam/boards/sam4e_ek/init.o
- .debug_info    0x000097ed     0x2179 src/ASF/sam/drivers/afec/afec.o
- .debug_info    0x0000b966     0x2255 src/ASF/sam/drivers/pio/pio.o
- .debug_info    0x0000dbbb     0x19ee src/ASF/sam/drivers/pio/pio_handler.o
- .debug_info    0x0000f5a9     0x18b1 src/ASF/sam/drivers/pmc/pmc.o
- .debug_info    0x00010e5a     0x11c9 src/ASF/sam/drivers/spi/spi.o
- .debug_info    0x00012023     0x131a src/ASF/sam/drivers/tc/tc.o
- .debug_info    0x0001333d     0x11ae src/ASF/sam/drivers/uart/uart.o
- .debug_info    0x000144eb     0x2039 src/ASF/sam/drivers/usart/usart.o
- .debug_info    0x00016524       0xdc src/ASF/sam/utils/cmsis/sam4e/source/templates/exceptions.o
- .debug_info    0x00016600     0x1240 src/ASF/sam/utils/cmsis/sam4e/source/templates/gcc/startup_sam4e.o
- .debug_info    0x00017840      0x495 src/ASF/sam/utils/cmsis/sam4e/source/templates/system_sam4e.o
- .debug_info    0x00017cd5      0xdb0 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+.debug_info     0x00000000    0x18aa2
+ .debug_info    0x00000000     0x3c2b src/afec_example1.o
+ .debug_info    0x00003c2b     0x1124 src/ASF/common/services/clock/sam4e/sysclk.o
+ .debug_info    0x00004d4f      0xa8e src/ASF/common/services/sleepmgr/sam/sleepmgr.o
+ .debug_info    0x000057dd      0xaff src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_info    0x000062dc      0xac9 src/ASF/common/utils/stdio/read.o
+ .debug_info    0x00006da5      0xac6 src/ASF/common/utils/stdio/write.o
+ .debug_info    0x0000786b     0x1f9f src/ASF/sam/boards/sam4e_ek/init.o
+ .debug_info    0x0000980a     0x2179 src/ASF/sam/drivers/afec/afec.o
+ .debug_info    0x0000b983     0x2255 src/ASF/sam/drivers/pio/pio.o
+ .debug_info    0x0000dbd8     0x19ee src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_info    0x0000f5c6     0x18b1 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_info    0x00010e77     0x11c9 src/ASF/sam/drivers/spi/spi.o
+ .debug_info    0x00012040     0x131a src/ASF/sam/drivers/tc/tc.o
+ .debug_info    0x0001335a     0x11ae src/ASF/sam/drivers/uart/uart.o
+ .debug_info    0x00014508     0x2039 src/ASF/sam/drivers/usart/usart.o
+ .debug_info    0x00016541       0xdc src/ASF/sam/utils/cmsis/sam4e/source/templates/exceptions.o
+ .debug_info    0x0001661d     0x1240 src/ASF/sam/utils/cmsis/sam4e/source/templates/gcc/startup_sam4e.o
+ .debug_info    0x0001785d      0x495 src/ASF/sam/utils/cmsis/sam4e/source/templates/system_sam4e.o
+ .debug_info    0x00017cf2      0xdb0 src/ASF/sam/utils/syscalls/gcc/syscalls.o
 
 .debug_abbrev   0x00000000     0x3546
  .debug_abbrev  0x00000000      0x4c7 src/afec_example1.o
