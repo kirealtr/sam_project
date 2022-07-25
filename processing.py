@@ -37,5 +37,7 @@ ax.grid(which='minor', linestyle = ':')
 ax.legend()
 
 fig.savefig('graph.svg')
-
 print(sound_speed)
+
+with open('after_exhale.txt', 'a') as file:
+    file.write('{:.2f}\n'.format(sound_speed))

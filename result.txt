@@ -1,0 +1,2 @@
+Speed of sound in clear air: 350.10 +- 0.33
+Speed of sound in air after exhale: 347.42 +- 0.44
