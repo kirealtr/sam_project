@@ -16,6 +16,7 @@ t = np.arange(0, duration, period)
 t_0 = np.argmax(data[0]) * period
 t_1 = np.argmax(data[1]) * period
 sound_speed = length / (t_1 - t_0)
+print(sound_speed)
 
 #Make graph
 fig, ax = plt.subplots(figsize = (16, 10), dpi = 400)
