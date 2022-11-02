@@ -105,6 +105,7 @@ static void restart(void)
 		configure_tc();
 		buffer_full = false;
 		trigger_hit = false;
+		channel_to_write = 2;
 	}
 }
 
