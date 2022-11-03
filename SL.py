@@ -13,21 +13,22 @@ GO_pin = 17
 is_sampled_pin = 27
 ch_select_pin = 22
 is_written_pin = 23
-chip_sel = 8
+SPI_CS = 8
 
 GPIO.setup(GO_pin, GPIO.OUT)
 GPIO.setup(is_sampled_pin, GPIO.IN)
 GPIO.setup(ch_select_pin, GPIO.OUT)
 GPIO.setup(is_written_pin, GPIO.IN)
-GPIO.setup(chip_sel, GPIO.OUT)
+GPIO.setup(SPI_CS, GPIO.OUT)
 
 def spi_read():
-    GPIO.output(chip_sel, 0)
+    GPIO.output(SPI_CS, 0)
     resp = spi.xfer2([0, 0])
-    GPIO.output(chip_sel, 1)
+    GPIO.output(SPI_CS, 1)
     return resp[0] << 8 | resp[1]
 
 GPIO.output(GO_pin, 0)
+GPIO.output(SPI_CS, 1)
 
 def write_list(arr, file_name):
     arr_str = list(map(str, arr))
@@ -56,6 +57,7 @@ try:
     GPIO.output(GO_pin, 0)
     
     data[0].pop(0)
+    
     data[1].pop(0)
     plt.plot(data[0]) #blue
     plt.plot(data[1]) #orange
