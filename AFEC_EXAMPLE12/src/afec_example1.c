@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <delay.h>
+#include <stdlib.h>
 #include "asf.h"
 #include "stdio_serial.h"
 #include "conf_board.h"
@@ -31,38 +32,38 @@
 
 /* Creating PIO pins */
 // #define sound_pin IOPORT_CREATE_PIN(PIOD, 28)
-
 /* Pins to communicate with RPi, black wire connects GND */
 #define GO_pin IOPORT_CREATE_PIN(PIOC, 31) // red wire, GPIO17
 #define is_sampled_pin IOPORT_CREATE_PIN(PIOC, 30) // yellow wire, GPIO27
 #define ch_select_pin IOPORT_CREATE_PIN(PIOC, 29) // blue wire, GPIO22
 #define is_written_pin IOPORT_CREATE_PIN(PIOC, 28) // green  wire, GPIO23
-
 /* Chip select. */
 #define SPI_CHIP_SEL 0
 #define SPI_CHIP_PCS spi_get_pcs(SPI_CHIP_SEL)
-
 /* Clock polarity. */
 #define SPI_CLK_POLARITY 0
-
 /* Clock phase. */
 #define SPI_CLK_PHASE 0
-
 /* Number of commands logged in status. */
 #define NB_STATUS_CMD   20
-
 /* UART baudrate. */
 #define UART_BAUDRATE      115200
-
 #define BITS_PER_TRANSFER SPI_CSR_BITS_16_BIT
-
 #define DATA_SIZE 5000
-
-#define PRE_TRIGGER_SAMPLES DATA_SIZE/10
+#define PRE_TRIGGER_SAMPLES		(DATA_SIZE / 2)
 #define TRIGGER_CHANNEL 0
 
 static uint16_t data[2][DATA_SIZE];
 volatile uint32_t i = 0;
+
+struct sample_s {
+	uint16_t value_0;
+	uint16_t value_1;
+	struct sample_s* next;
+};
+/*
+typedef struct sample_s sample_t;
+static sample_t *sample_first, *sample_last;*/
 
 volatile bool buffer_full = false;
 volatile uint8_t channel_to_write = 2; // by default channel_to_write doesn't spot on any channel
@@ -163,6 +164,14 @@ static void configure_console(void)
 	sysclk_enable_peripheral_clock(CONSOLE_UART_ID);
 	stdio_serial_init(CONF_UART, &uart_serial_options);
 }
+/*
+static void shift_data(void) {
+	for (int j = i; j > 0; ) {
+		data[0][j - 1] = data[0][j];
+		data[1][j - 1] = data[1][j];
+		j--;
+	}
+}*/
 
 static void get_data(void)
 {	
@@ -173,11 +182,23 @@ static void get_data(void)
 		data[0][i] = afec_channel_get_value(AFEC0, channel_0);
 		data[1][i] = afec_channel_get_value(AFEC0, channel_1);
 		
-		if (data[TRIGGER_CHANNEL][i] >= trigger_level && i > 4)
+		if (data[TRIGGER_CHANNEL][i] >= trigger_level)
 			trigger_hit = true;
 		
-		if (i >= PRE_TRIGGER_SAMPLES && !trigger_hit)
+		if ((i >= PRE_TRIGGER_SAMPLES) && (!trigger_hit)) {
+			/*for (uint32_t j = 0; j <= i; j++) {
+				data[0][j] = data[0][j + 1];
+				data[1][j] = data[1][j + 1];
+			}*/
 			i = 0;
+			/*sample_last->value_0 = data[0][i - 1];
+			sample_last->value_1 = data[1][i - 1];
+			sample_last->next = (sample_t *)malloc(sizeof(sample_t));
+			sample_last = sample_last->next;
+			sample_t *tmp = sample_first;
+			sample_first = sample_first->next;
+			free(tmp);*/
+		}
 		else 
 			i++;
 	}
@@ -236,7 +257,7 @@ static void configure_channel(int chan)
 	struct afec_ch_config afec_ch_cfg;
 	afec_ch_get_config_defaults(&afec_ch_cfg);
 	afec_ch_set_config(AFEC0, chan, &afec_ch_cfg);
-	afec_channel_set_analog_offset(AFEC0, chan, 0x800);
+	afec_channel_set_analog_offset(AFEC0, chan, (chan == channel_0) ? 2000 : 2940);
 }
 /*
 static void mk_sound(void)
@@ -259,6 +280,14 @@ static void configure_pio(void)
 		ioport_set_pin_dir(is_written_pin, IOPORT_DIR_OUTPUT);
 }
 
+/*static void copy_data(void) {
+	sample_t* sample = sample_first;
+	for (int j = 0; j < PRE_TRIGGER_SAMPLES; j++) {
+		data[0][j] = sample->value_0;
+		data[1][j] = sample->value_1;
+		sample = sample->next;
+	}
+}*/
 
 int main(void)
 {
@@ -284,6 +313,16 @@ int main(void)
 	
 	state = SL_READY;
 	configure_tc();
+	
+	/*sample_first = (sample_t *)malloc(sizeof(sample_t));
+	sample_t *sample = sample_first;
+	sample_t *prev = sample;
+	for (uint16_t j = 0; j < PRE_TRIGGER_SAMPLES - 1; j++) {
+		sample->next = (sample_t *)malloc(sizeof(sample_t));
+		prev = sample;
+		sample = sample->next;
+	}
+	sample_last = prev;*/
 
 	while (1) {
 		switch (state){
@@ -300,6 +339,7 @@ int main(void)
 				//mk_sound();
 				if (buffer_full) 
 				{	
+					//copy_data();
 					ioport_set_pin_level(LED1_GPIO, 1);
 					ioport_set_pin_level(LED2_GPIO, 0);
 					ioport_set_pin_level(is_sampled_pin, 1);
